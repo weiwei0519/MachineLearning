@@ -1,0 +1,33 @@
+digraph Tree {
+node [shape=box, style="filled, rounded", color="black", fontname="helvetica"] ;
+edge [fontname="helvetica"] ;
+0 [label="marital <= 1.5\ngini = 0.372\nsamples = 36177\nvalue = [8949, 27228]\nclass = >50K", fillcolor="#7abdee"] ;
+1 [label="education-years <= 12.5\ngini = 0.495\nsamples = 16858\nvalue = [7629, 9229]\nclass = >50K", fillcolor="#ddeefa"] ;
+0 -> 1 [labeldistance=2.5, labelangle=45, headlabel="True"] ;
+2 [label="capital-gain <= 5095.5\ngini = 0.447\nsamples = 11887\nvalue = [4002, 7885]\nclass = >50K", fillcolor="#9dcff2"] ;
+1 -> 2 ;
+3 [label="gini = 0.423\nsamples = 11299\nvalue = [3426, 7873]\nclass = >50K", fillcolor="#8fc8f0"] ;
+2 -> 3 ;
+4 [label="gini = 0.04\nsamples = 588\nvalue = [576, 12]\nclass = <=50K", fillcolor="#e6843d"] ;
+2 -> 4 ;
+5 [label="capital-gain <= 5095.5\ngini = 0.395\nsamples = 4971\nvalue = [3627, 1344]\nclass = <=50K", fillcolor="#efb082"] ;
+1 -> 5 ;
+6 [label="gini = 0.435\nsamples = 4207\nvalue = [2864, 1343]\nclass = <=50K", fillcolor="#f1bc96"] ;
+5 -> 6 ;
+7 [label="gini = 0.003\nsamples = 764\nvalue = [763, 1]\nclass = <=50K", fillcolor="#e58139"] ;
+5 -> 7 ;
+8 [label="capital-gain <= 7055.5\ngini = 0.127\nsamples = 19319\nvalue = [1320, 17999]\nclass = >50K", fillcolor="#48a4e7"] ;
+0 -> 8 [labeldistance=2.5, labelangle=-45, headlabel="False"] ;
+9 [label="education-years <= 12.5\ngini = 0.097\nsamples = 18955\nvalue = [967, 17988]\nclass = >50K", fillcolor="#44a2e6"] ;
+8 -> 9 ;
+10 [label="gini = 0.05\nsamples = 15067\nvalue = [383, 14684]\nclass = >50K", fillcolor="#3ea0e6"] ;
+9 -> 10 ;
+11 [label="gini = 0.255\nsamples = 3888\nvalue = [584, 3304]\nclass = >50K", fillcolor="#5caeea"] ;
+9 -> 11 ;
+12 [label="capital-gain <= 8255.0\ngini = 0.059\nsamples = 364\nvalue = [353, 11]\nclass = <=50K", fillcolor="#e6853f"] ;
+8 -> 12 ;
+13 [label="gini = 0.455\nsamples = 20\nvalue = [13, 7]\nclass = <=50K", fillcolor="#f3c5a4"] ;
+12 -> 13 ;
+14 [label="gini = 0.023\nsamples = 344\nvalue = [340, 4]\nclass = <=50K", fillcolor="#e5823b"] ;
+12 -> 14 ;
+}

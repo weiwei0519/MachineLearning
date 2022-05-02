@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<!-- saved from url=(0047)https://www.cnblogs.com/jimobuwu/p/9187839.html -->
+<html lang="zh-cn"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="origin-when-crossorigin">
+    <meta name="description" content="以下内容参考CS231n。 上一篇关于分类器的文章，使用的是KNN分类器，KNN分类有两个主要的缺点： 空间上，需要存储所有的训练数据用于比较。 时间上，每次分类操作，需要和所有训练数据比较。 本文开">
+    <meta property="og:description" content="以下内容参考CS231n。 上一篇关于分类器的文章，使用的是KNN分类器，KNN分类有两个主要的缺点： 空间上，需要存储所有的训练数据用于比较。 时间上，每次分类操作，需要和所有训练数据比较。 本文开">
+    <meta http-equiv="Cache-Control" content="no-transform">
+    <meta http-equiv="Cache-Control" content="no-siteapp">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>线性分类器及python实现 - jimobuwu - 博客园</title>
+    <link id="favicon" rel="shortcut icon" href="https://common.cnblogs.com/favicon.svg" type="image/svg+xml">
+    
+    <style>:not(.cnblogs_code):not(.cnblogs_Highlighter)>pre:not([class*="language-"]):not([highlighted]):not(.hljs) {
+        background: rgb(245, 245, 245);
+        padding: 5px;
+        border: 1px solid rgb(204, 204, 204);
+        border-radius: 3px;
+        border-color: transparent;
+        color: rgb(68, 68, 68);
+        font-family: "Courier New", sans-serif;
+    }:not(.cnblogs_code):not(.cnblogs_Highlighter)>pre:not([highlighted]) code:not(.hljs) {
+            background: rgb(245, 245, 245) !important;
+            border-color: transparent !important;
+        }</style><link rel="stylesheet" href="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/blog-common.min.css">
+    <link id="MainCss" rel="stylesheet" href="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/bundle-elf.min.css">
+    <link id="highlighter-theme-cnblogs" type="text/css" rel="stylesheet" href="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/cnblogs.css">
+    
+    <link id="mobile-style" media="only screen and (max-width: 767px)" type="text/css" rel="stylesheet" href="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/bundle-elf-mobile.min.css">
+    
+    <link type="application/rss+xml" rel="alternate" href="https://www.cnblogs.com/jimobuwu/rss">
+    <link type="application/rsd+xml" rel="EditURI" href="https://www.cnblogs.com/jimobuwu/rsd.xml">
+    <link type="application/wlwmanifest+xml" rel="wlwmanifest" href="https://www.cnblogs.com/jimobuwu/wlwmanifest.xml">
+    <script type="text/javascript" async="" src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/analytics.js.下载"></script><script type="text/javascript" src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/encoder.js.下载"></script><script>
+        var currentBlogId = 422476;
+        var currentBlogApp = 'jimobuwu';
+        var cb_enable_mathjax = true;
+        var isLogined = false;
+        var isBlogOwner = false;
+        var skinName = 'elf';
+        var visitorUserId = '';
+        var hasCustomScript = false;
+        try {
+            if (hasCustomScript && document.referrer && document.referrer.indexOf('baidu.com') >= 0) {
+                Object.defineProperty(document, 'referrer', { value: '' });
+                Object.defineProperty(Document.prototype, 'referrer', { get: function(){ return ''; } });
+            }
+        } catch(error) { }
+        window.codeHighlightEngine = 1;
+        window.enableCodeLineNumber = false;
+        window.codeHighlightTheme = 'cnblogs';
+    </script>
+        <script>
+            var currentPostDateAdded = '2018-07-10 21:24';
+        </script>
+    <script src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/jquery-2.2.0.min.js.下载"></script>
+    <script src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/blog-common.min.js.下载"></script><style type="text/css">.medium-zoom-overlay{position:fixed;top:0;right:0;bottom:0;left:0;opacity:0;transition:opacity .3s;will-change:opacity}  .medium-zoom--opened .medium-zoom-overlay{cursor:pointer;cursor:zoom-out;opacity:1}  .medium-zoom-image{cursor:pointer;cursor:zoom-in;transition:transform .3s cubic-bezier(.2,0,.2,1)!important}  .medium-zoom-image--hidden{visibility:hidden}  .medium-zoom-image--opened{position:relative;cursor:pointer;cursor:zoom-out;will-change:transform}</style><script id="hljs-script" async="" data-loaded="true" src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/highlight.min.js.下载"></script>
+    <script type="text/x-mathjax-config;executed=true">
+        MathJax.Hub.Config({
+        tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']], processClass: 'math', processEscapes: true },
+        TeX: {
+        equationNumbers: { autoNumber: ['AMS'], useLabelIds: true },
+        extensions: ['extpfeil.js', 'mediawiki-texvc.js'],
+        Macros: {bm: "\\boldsymbol"}
+        },
+        'HTML-CSS': { linebreaks: { automatic: true } },
+        SVG: { linebreaks: { automatic: true } }
+        });
+    </script>
+    <script src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/MathJax.js.下载"></script>
+    
+<style type="text/css">.MathJax_Hover_Frame {border-radius: .25em; -webkit-border-radius: .25em; -moz-border-radius: .25em; -khtml-border-radius: .25em; box-shadow: 0px 0px 15px #83A; -webkit-box-shadow: 0px 0px 15px #83A; -moz-box-shadow: 0px 0px 15px #83A; -khtml-box-shadow: 0px 0px 15px #83A; border: 1px solid #A6D ! important; display: inline-block; position: absolute}
+.MathJax_Menu_Button .MathJax_Hover_Arrow {position: absolute; cursor: pointer; display: inline-block; border: 2px solid #AAA; border-radius: 4px; -webkit-border-radius: 4px; -moz-border-radius: 4px; -khtml-border-radius: 4px; font-family: 'Courier New',Courier; font-size: 9px; color: #F0F0F0}
+.MathJax_Menu_Button .MathJax_Hover_Arrow span {display: block; background-color: #AAA; border: 1px solid; border-radius: 3px; line-height: 0; padding: 4px}
+.MathJax_Hover_Arrow:hover {color: white!important; border: 2px solid #CCC!important}
+.MathJax_Hover_Arrow:hover span {background-color: #CCC!important}
+</style><style type="text/css">#MathJax_About {position: fixed; left: 50%; width: auto; text-align: center; border: 3px outset; padding: 1em 2em; background-color: #DDDDDD; color: black; cursor: default; font-family: message-box; font-size: 120%; font-style: normal; text-indent: 0; text-transform: none; line-height: normal; letter-spacing: normal; word-spacing: normal; word-wrap: normal; white-space: nowrap; float: none; z-index: 201; border-radius: 15px; -webkit-border-radius: 15px; -moz-border-radius: 15px; -khtml-border-radius: 15px; box-shadow: 0px 10px 20px #808080; -webkit-box-shadow: 0px 10px 20px #808080; -moz-box-shadow: 0px 10px 20px #808080; -khtml-box-shadow: 0px 10px 20px #808080; filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true')}
+#MathJax_About.MathJax_MousePost {outline: none}
+.MathJax_Menu {position: absolute; background-color: white; color: black; width: auto; padding: 2px; border: 1px solid #CCCCCC; margin: 0; cursor: default; font: menu; text-align: left; text-indent: 0; text-transform: none; line-height: normal; letter-spacing: normal; word-spacing: normal; word-wrap: normal; white-space: nowrap; float: none; z-index: 201; box-shadow: 0px 10px 20px #808080; -webkit-box-shadow: 0px 10px 20px #808080; -moz-box-shadow: 0px 10px 20px #808080; -khtml-box-shadow: 0px 10px 20px #808080; filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true')}
+.MathJax_MenuItem {padding: 2px 2em; background: transparent}
+.MathJax_MenuArrow {position: absolute; right: .5em; padding-top: .25em; color: #666666; font-size: .75em}
+.MathJax_MenuActive .MathJax_MenuArrow {color: white}
+.MathJax_MenuArrow.RTL {left: .5em; right: auto}
+.MathJax_MenuCheck {position: absolute; left: .7em}
+.MathJax_MenuCheck.RTL {right: .7em; left: auto}
+.MathJax_MenuRadioCheck {position: absolute; left: 1em}
+.MathJax_MenuRadioCheck.RTL {right: 1em; left: auto}
+.MathJax_MenuLabel {padding: 2px 2em 4px 1.33em; font-style: italic}
+.MathJax_MenuRule {border-top: 1px solid #CCCCCC; margin: 4px 1px 0px}
+.MathJax_MenuDisabled {color: GrayText}
+.MathJax_MenuActive {background-color: Highlight; color: HighlightText}
+.MathJax_MenuDisabled:focus, .MathJax_MenuLabel:focus {background-color: #E8E8E8}
+.MathJax_ContextMenu:focus {outline: none}
+.MathJax_ContextMenu .MathJax_MenuItem:focus {outline: none}
+#MathJax_AboutClose {top: .2em; right: .2em}
+.MathJax_Menu .MathJax_MenuClose {top: -10px; left: -10px}
+.MathJax_MenuClose {position: absolute; cursor: pointer; display: inline-block; border: 2px solid #AAA; border-radius: 18px; -webkit-border-radius: 18px; -moz-border-radius: 18px; -khtml-border-radius: 18px; font-family: 'Courier New',Courier; font-size: 24px; color: #F0F0F0}
+.MathJax_MenuClose span {display: block; background-color: #AAA; border: 1.5px solid; border-radius: 18px; -webkit-border-radius: 18px; -moz-border-radius: 18px; -khtml-border-radius: 18px; line-height: 0; padding: 8px 0 6px}
+.MathJax_MenuClose:hover {color: white!important; border: 2px solid #CCC!important}
+.MathJax_MenuClose:hover span {background-color: #CCC!important}
+.MathJax_MenuClose:hover:focus {outline: none}
+</style><style type="text/css">.MathJax_Preview .MJXf-math {color: inherit!important}
+</style><style type="text/css">.MJX_Assistive_MathML {position: absolute!important; top: 0; left: 0; clip: rect(1px, 1px, 1px, 1px); padding: 1px 0 0 0!important; border: 0!important; height: 1px!important; width: 1px!important; overflow: hidden!important; display: block!important; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none}
+.MJX_Assistive_MathML.MJX_Assistive_MathML_Block {width: 100%!important}
+</style><style type="text/css">#MathJax_Zoom {position: absolute; background-color: #F0F0F0; overflow: auto; display: block; z-index: 301; padding: .5em; border: 1px solid black; margin: 0; font-weight: normal; font-style: normal; text-align: left; text-indent: 0; text-transform: none; line-height: normal; letter-spacing: normal; word-spacing: normal; word-wrap: normal; white-space: nowrap; float: none; -webkit-box-sizing: content-box; -moz-box-sizing: content-box; box-sizing: content-box; box-shadow: 5px 5px 15px #AAAAAA; -webkit-box-shadow: 5px 5px 15px #AAAAAA; -moz-box-shadow: 5px 5px 15px #AAAAAA; -khtml-box-shadow: 5px 5px 15px #AAAAAA; filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true')}
+#MathJax_ZoomOverlay {position: absolute; left: 0; top: 0; z-index: 300; display: inline-block; width: 100%; height: 100%; border: 0; padding: 0; margin: 0; background-color: white; opacity: 0; filter: alpha(opacity=0)}
+#MathJax_ZoomFrame {position: relative; display: inline-block; height: 0; width: 0}
+#MathJax_ZoomEventTrap {position: absolute; left: 0; top: 0; z-index: 302; display: inline-block; border: 0; padding: 0; margin: 0; background-color: white; opacity: 0; filter: alpha(opacity=0)}
+</style><style type="text/css">.MathJax_Preview {color: #888}
+#MathJax_Message {position: fixed; left: 1em; bottom: 1.5em; background-color: #E6E6E6; border: 1px solid #959595; margin: 0px; padding: 2px 8px; z-index: 102; color: black; font-size: 80%; width: auto; white-space: nowrap}
+#MathJax_MSIE_Frame {position: absolute; top: 0; left: 0; width: 0px; z-index: 101; border: 0px; margin: 0px; padding: 0px}
+.MathJax_Error {color: #CC0000; font-style: italic}
+</style><style type="text/css">.MJXp-script {font-size: .8em}
+.MJXp-right {-webkit-transform-origin: right; -moz-transform-origin: right; -ms-transform-origin: right; -o-transform-origin: right; transform-origin: right}
+.MJXp-bold {font-weight: bold}
+.MJXp-italic {font-style: italic}
+.MJXp-scr {font-family: MathJax_Script,'Times New Roman',Times,STIXGeneral,serif}
+.MJXp-frak {font-family: MathJax_Fraktur,'Times New Roman',Times,STIXGeneral,serif}
+.MJXp-sf {font-family: MathJax_SansSerif,'Times New Roman',Times,STIXGeneral,serif}
+.MJXp-cal {font-family: MathJax_Caligraphic,'Times New Roman',Times,STIXGeneral,serif}
+.MJXp-mono {font-family: MathJax_Typewriter,'Times New Roman',Times,STIXGeneral,serif}
+.MJXp-largeop {font-size: 150%}
+.MJXp-largeop.MJXp-int {vertical-align: -.2em}
+.MJXp-math {display: inline-block; line-height: 1.2; text-indent: 0; font-family: 'Times New Roman',Times,STIXGeneral,serif; white-space: nowrap; border-collapse: collapse}
+.MJXp-display {display: block; text-align: center; margin: 1em 0}
+.MJXp-math span {display: inline-block}
+.MJXp-box {display: block!important; text-align: center}
+.MJXp-box:after {content: " "}
+.MJXp-rule {display: block!important; margin-top: .1em}
+.MJXp-char {display: block!important}
+.MJXp-mo {margin: 0 .15em}
+.MJXp-mfrac {margin: 0 .125em; vertical-align: .25em}
+.MJXp-denom {display: inline-table!important; width: 100%}
+.MJXp-denom > * {display: table-row!important}
+.MJXp-surd {vertical-align: top}
+.MJXp-surd > * {display: block!important}
+.MJXp-script-box > *  {display: table!important; height: 50%}
+.MJXp-script-box > * > * {display: table-cell!important; vertical-align: top}
+.MJXp-script-box > *:last-child > * {vertical-align: bottom}
+.MJXp-script-box > * > * > * {display: block!important}
+.MJXp-mphantom {visibility: hidden}
+.MJXp-munderover, .MJXp-munder {display: inline-table!important}
+.MJXp-over {display: inline-block!important; text-align: center}
+.MJXp-over > * {display: block!important}
+.MJXp-munderover > *, .MJXp-munder > * {display: table-row!important}
+.MJXp-mtable {vertical-align: .25em; margin: 0 .125em}
+.MJXp-mtable > * {display: inline-table!important; vertical-align: middle}
+.MJXp-mtr {display: table-row!important}
+.MJXp-mtd {display: table-cell!important; text-align: center; padding: .5em 0 0 .5em}
+.MJXp-mtr > .MJXp-mtd:first-child {padding-left: 0}
+.MJXp-mtr:first-child > .MJXp-mtd {padding-top: 0}
+.MJXp-mlabeledtr {display: table-row!important}
+.MJXp-mlabeledtr > .MJXp-mtd:first-child {padding-left: 0}
+.MJXp-mlabeledtr:first-child > .MJXp-mtd {padding-top: 0}
+.MJXp-merror {background-color: #FFFF88; color: #CC0000; border: 1px solid #CC0000; padding: 1px 3px; font-style: normal; font-size: 90%}
+.MJXp-scale0 {-webkit-transform: scaleX(.0); -moz-transform: scaleX(.0); -ms-transform: scaleX(.0); -o-transform: scaleX(.0); transform: scaleX(.0)}
+.MJXp-scale1 {-webkit-transform: scaleX(.1); -moz-transform: scaleX(.1); -ms-transform: scaleX(.1); -o-transform: scaleX(.1); transform: scaleX(.1)}
+.MJXp-scale2 {-webkit-transform: scaleX(.2); -moz-transform: scaleX(.2); -ms-transform: scaleX(.2); -o-transform: scaleX(.2); transform: scaleX(.2)}
+.MJXp-scale3 {-webkit-transform: scaleX(.3); -moz-transform: scaleX(.3); -ms-transform: scaleX(.3); -o-transform: scaleX(.3); transform: scaleX(.3)}
+.MJXp-scale4 {-webkit-transform: scaleX(.4); -moz-transform: scaleX(.4); -ms-transform: scaleX(.4); -o-transform: scaleX(.4); transform: scaleX(.4)}
+.MJXp-scale5 {-webkit-transform: scaleX(.5); -moz-transform: scaleX(.5); -ms-transform: scaleX(.5); -o-transform: scaleX(.5); transform: scaleX(.5)}
+.MJXp-scale6 {-webkit-transform: scaleX(.6); -moz-transform: scaleX(.6); -ms-transform: scaleX(.6); -o-transform: scaleX(.6); transform: scaleX(.6)}
+.MJXp-scale7 {-webkit-transform: scaleX(.7); -moz-transform: scaleX(.7); -ms-transform: scaleX(.7); -o-transform: scaleX(.7); transform: scaleX(.7)}
+.MJXp-scale8 {-webkit-transform: scaleX(.8); -moz-transform: scaleX(.8); -ms-transform: scaleX(.8); -o-transform: scaleX(.8); transform: scaleX(.8)}
+.MJXp-scale9 {-webkit-transform: scaleX(.9); -moz-transform: scaleX(.9); -ms-transform: scaleX(.9); -o-transform: scaleX(.9); transform: scaleX(.9)}
+.MathJax_PHTML .noError {vertical-align: ; font-size: 90%; text-align: left; color: black; padding: 1px 3px; border: 1px solid}
+</style><meta http-equiv="origin-trial" content="AxujKG9INjsZ8/gUq8+dTruNvk7RjZQ1oFhhgQbcTJKDnZfbzSTE81wvC2Hzaf3TW4avA76LTZEMdiedF1vIbA4AAABueyJvcmlnaW4iOiJodHRwczovL2ltYXNkay5nb29nbGVhcGlzLmNvbTo0NDMiLCJmZWF0dXJlIjoiVHJ1c3RUb2tlbnMiLCJleHBpcnkiOjE2NTI3NzQ0MDAsImlzVGhpcmRQYXJ0eSI6dHJ1ZX0="><meta http-equiv="origin-trial" content="Azuce85ORtSnWe1MZDTv68qpaW3iHyfL9YbLRy0cwcCZwVnePnOmkUJlG8HGikmOwhZU22dElCcfrfX2HhrBPAkAAAB7eyJvcmlnaW4iOiJodHRwczovL2RvdWJsZWNsaWNrLm5ldDo0NDMiLCJmZWF0dXJlIjoiVHJ1c3RUb2tlbnMiLCJleHBpcnkiOjE2NTI3NzQ0MDAsImlzU3ViZG9tYWluIjp0cnVlLCJpc1RoaXJkUGFydHkiOnRydWV9"><meta http-equiv="origin-trial" content="A16nvcdeoOAqrJcmjLRpl1I6f3McDD8EfofAYTt/P/H4/AWwB99nxiPp6kA0fXoiZav908Z8etuL16laFPUdfQsAAACBeyJvcmlnaW4iOiJodHRwczovL2dvb2dsZXRhZ3NlcnZpY2VzLmNvbTo0NDMiLCJmZWF0dXJlIjoiVHJ1c3RUb2tlbnMiLCJleHBpcnkiOjE2NTI3NzQ0MDAsImlzU3ViZG9tYWluIjp0cnVlLCJpc1RoaXJkUGFydHkiOnRydWV9"><meta http-equiv="origin-trial" content="AxBHdr0J44vFBQtZUqX9sjiqf5yWZ/OcHRcRMN3H9TH+t90V/j3ENW6C8+igBZFXMJ7G3Pr8Dd13632aLng42wgAAACBeyJvcmlnaW4iOiJodHRwczovL2dvb2dsZXN5bmRpY2F0aW9uLmNvbTo0NDMiLCJmZWF0dXJlIjoiVHJ1c3RUb2tlbnMiLCJleHBpcnkiOjE2NTI3NzQ0MDAsImlzU3ViZG9tYWluIjp0cnVlLCJpc1RoaXJkUGFydHkiOnRydWV9"><meta http-equiv="origin-trial" content="A88BWHFjcawUfKU3lIejLoryXoyjooBXLgWmGh+hNcqMK44cugvsI5YZbNarYvi3roc1fYbHA1AVbhAtuHZflgEAAAB2eyJvcmlnaW4iOiJodHRwczovL2dvb2dsZS5jb206NDQzIiwiZmVhdHVyZSI6IlRydXN0VG9rZW5zIiwiZXhwaXJ5IjoxNjUyNzc0NDAwLCJpc1N1YmRvbWFpbiI6dHJ1ZSwiaXNUaGlyZFBhcnR5Ijp0cnVlfQ=="><meta http-equiv="origin-trial" content="A8FHS1NmdCwGqD9DwOicnHHY+y27kdWfxKa0YHSGDfv0CSpDKRHTQdQmZVPDUdaFWUsxdgVxlwAd6o+dhJykPA0AAACWeyJvcmlnaW4iOiJodHRwczovL2RvdWJsZWNsaWNrLm5ldDo0NDMiLCJmZWF0dXJlIjoiQ29udmVyc2lvbk1lYXN1cmVtZW50IiwiZXhwaXJ5IjoxNjQzMTU1MTk5LCJpc1N1YmRvbWFpbiI6dHJ1ZSwiaXNUaGlyZFBhcnR5Ijp0cnVlLCJ1c2FnZSI6InN1YnNldCJ9"><meta http-equiv="origin-trial" content="A8zdXi6dr1hwXEUjQrYiyYQGlU3557y5QWDnN0Lwgj9ePt66XMEvNkVWOEOWPd7TP9sBQ25X0Q15Lr1Nn4oGFQkAAACceyJvcmlnaW4iOiJodHRwczovL2dvb2dsZXN5bmRpY2F0aW9uLmNvbTo0NDMiLCJmZWF0dXJlIjoiQ29udmVyc2lvbk1lYXN1cmVtZW50IiwiZXhwaXJ5IjoxNjQzMTU1MTk5LCJpc1N1YmRvbWFpbiI6dHJ1ZSwiaXNUaGlyZFBhcnR5Ijp0cnVlLCJ1c2FnZSI6InN1YnNldCJ9"><meta http-equiv="origin-trial" content="A4/Htern2udN9w3yJK9QgWQxQFruxOXsXL7cW60DyCl0EZFGCSme/J33Q/WzF7bBkVvhEWDlcBiUyZaim5CpFQwAAACceyJvcmlnaW4iOiJodHRwczovL2dvb2dsZXRhZ3NlcnZpY2VzLmNvbTo0NDMiLCJmZWF0dXJlIjoiQ29udmVyc2lvbk1lYXN1cmVtZW50IiwiZXhwaXJ5IjoxNjQzMTU1MTk5LCJpc1N1YmRvbWFpbiI6dHJ1ZSwiaXNUaGlyZFBhcnR5Ijp0cnVlLCJ1c2FnZSI6InN1YnNldCJ9"><script src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/pubads_impl_2022030801.js.下载" async=""></script><link rel="preload" href="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/f.txt" as="script"><script type="text/javascript" src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/f.txt"></script></head>
+<body class="skin-elf has-navbar"><div id="MathJax_Message" style="display: none;"></div>
+    <a name="top"></a>
+    <div id="top_nav" class="navbar forpc">
+        <nav id="nav_main" class="navbar-main">
+            <ul id="nav_left" class="navbar-list navbar-left">
+                <li class="navbar-branding">
+                    <a href="https://www.cnblogs.com/" title="开发者的网上家园" role="banner">
+                            <img src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/logo.svg" alt="博客园Logo">
+                    </a>
+                </li>
+                <li><a href="https://www.cnblogs.com/" onclick="countClicks(&#39;skin-navbar-sitehome&#39;)">首页</a></li>
+                <li><a href="https://news.cnblogs.com/" onclick="countClicks(&#39;nav&#39;, &#39;skin-navbar-news&#39;)">新闻</a></li>
+                <li><a href="https://q.cnblogs.com/" onclick="countClicks(&#39;nav&#39;, &#39;skin-navbar-q&#39;)">博问</a></li>
+                <li><a id="nav_brandzone" href="https://brands.cnblogs.com/huawei" onclick="countClicks(&#39;nav&#39;, &#39;skin-navbar-brands&#39;)">专区</a></li>
+                <li><a href="https://ing.cnblogs.com/" onclick="countClicks(&#39;nav&#39;, &#39;skin-navbar-ing&#39;)">闪存</a></li>
+                <li><a href="https://edu.cnblogs.com/" onclick="countClicks(&#39;nav&#39;, &#39;skin-navbar-edu&#39;)">班级</a></li>
+            </ul>
+            <ul id="nav_right" class="navbar-list navbar-right">
+                <li>
+                    <form id="zzk_search" class="navbar-search" action="https://zzk.cnblogs.com/s" method="get" role="search">
+                        <input name="w" id="zzk_search_input" placeholder="代码改变世界" type="search" tabindex="3">
+                        <button type="submit" id="zzk_search_button">
+                            <img src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/search.svg" alt="搜索">
+                        </button>
+                    </form>
+                </li>
+                <li id="navbar_login_status" class="navbar-list">
+                    <a class="navbar-user-info navbar-blog" href="https://i.cnblogs.com/EditPosts.aspx?opt=1" alt="写随笔" title="写随笔" style="display: none;">
+                        <img id="new_post_icon" class="navbar-icon" src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/newpost.svg" alt="写随笔">
+                    </a>
+                    <a id="navblog-myblog-icon" class="navbar-user-info navbar-blog" href="https://passport.cnblogs.com/GetBlogApplyStatus.aspx" alt="我的博客" title="我的博客" style="display: none;">
+                        <img id="myblog_icon" class="navbar-icon" src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/myblog.svg" alt="我的博客">
+                    </a>
+                    <a class="navbar-user-info navbar-message navbar-icon-wrapper" href="https://msg.cnblogs.com/" alt="短消息" title="短消息" style="display: none;">
+                        <img id="msg_icon" class="navbar-icon" src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/message.svg" alt="短消息">
+                        <span id="msg_count" style="display: none"></span>
+                    </a>
+                    <a id="navbar_lite_mode_indicator" data-current-page="blog" style="display: none" href="javascript:void(0)" alt="简洁模式" title="简洁模式启用，您在访问他人博客时会使用简洁款皮肤展示">
+                        <img class="navbar-icon" src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/lite-mode-on.svg" alt="简洁模式">
+                    </a>
+                    <div id="user_info" class="navbar-user-info dropdown" style="display: none;">
+                        <a class="dropdown-button" href="https://home.cnblogs.com/">
+                            <img id="user_icon" class="navbar-avatar" src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/avatar-default.svg" alt="用户头像">
+                        </a>
+                        <div class="dropdown-menu">
+                            <a id="navblog-myblog-text" href="https://passport.cnblogs.com/GetBlogApplyStatus.aspx">我的博客</a>
+                            <a href="https://home.cnblogs.com/">我的园子</a>
+                            <a href="https://account.cnblogs.com/settings/account">账号设置</a>
+                            <a href="javascript:void(0)" id="navbar_lite_mode_toggle" title="简洁模式会使用简洁款皮肤显示所有博客">
+    简洁模式 <img id="navbar_lite_mode_on" src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/lite-mode-check.svg" class="hide"><span id="navbar_lite_mode_spinner" class="hide">...</span>
+</a>
+                            <a href="javascript:void(0)" onclick="account.logout();">退出登录</a>
+                        </div>
+                    </div>
+                    <a class="navbar-anonymous" href="https://account.cnblogs.com/signup" style="display: inline;">注册</a>
+                    <a class="navbar-anonymous" href="javascript:void(0);" onclick="account.login()" style="display: inline;">登录</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    
+    <!--done-->
+<div id="home">
+<div id="header">
+	<div id="blogTitle">
+        <a id="lnkBlogLogo" href="https://www.cnblogs.com/jimobuwu/"><img id="blogLogo" src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/logo.gif" alt="返回主页"></a>
+		
+<!--done-->
+<h1><a id="Header1_HeaderTitle" class="headermaintitle HeaderMainTitle" href="https://www.cnblogs.com/jimobuwu/">精诚所至 金石为开</a>
+</h1>
+<h2></h2>
+
+
+
+
+		
+	</div><!--end: blogTitle 博客的标题和副标题 -->
+	<div id="navigator">
+		
+<ul id="navList">
+<li><a id="blog_nav_sitehome" class="menu" href="https://www.cnblogs.com/">
+博客园</a>
+</li>
+<li>
+<a id="blog_nav_myhome" class="menu" href="https://www.cnblogs.com/jimobuwu/">
+首页</a>
+</li>
+<li>
+
+<a id="blog_nav_newpost" class="menu" href="https://i.cnblogs.com/EditPosts.aspx?opt=1">
+新随笔</a>
+</li>
+<li>
+<a id="blog_nav_contact" class="menu" href="https://msg.cnblogs.com/send/jimobuwu">
+联系</a></li>
+<li>
+<a id="blog_nav_rss" class="menu" href="javascript:void(0)" data-rss="https://www.cnblogs.com/jimobuwu/rss/">
+订阅</a>
+<!--<partial name="./Shared/_XmlLink.cshtml" model="Model" /></li>--></li>
+<li>
+<a id="blog_nav_admin" class="menu" href="https://i.cnblogs.com/">
+管理</a>
+</li>
+</ul>
+
+
+		<div class="blogStats">
+			<span id="stats_post_count">随笔 - 33&nbsp; </span>
+<span id="stats_article_count">文章 - 0&nbsp; </span>
+<span id="stats-comment_count">评论 - 0&nbsp; </span>
+<span id="stats-total-view-count">阅读 - 
+<span title="总阅读数: 32740">
+32740</span></span>
+
+		</div><!--end: blogStats -->
+	</div><!--end: navigator 博客导航栏 -->
+</div><!--end: header 头部 -->
+<div id="main">
+	<div id="mainContent">
+	<div class="forFlow">
+		<div id="post_detail">
+    <!--done-->
+    <div id="topics">
+        <div class="post">
+            <h1 class="postTitle">
+                
+<a id="cb_post_title_url" class="postTitle2 vertical-middle" href="https://www.cnblogs.com/jimobuwu/p/9187839.html">
+    <span role="heading" aria-level="2">线性分类器及python实现</span>
+    
+
+
+
+</a>
+
+            </h1>
+            <div class="clear"></div>
+            <div class="postBody">
+                <div id="cnblogs_post_body" class="blogpost-body blogpost-body-html">
+<p><em>以下内容参考CS231n。</em></p>
+<p>上一篇关于分类器的文章，使用的是KNN分类器，KNN分类有两个主要的缺点：</p>
+<ul>
+<li><em>空间上，需要存储所有的训练数据用于比较。</em></li>
+<li><em>时间上，每次分类操作，需要和所有训练数据比较。</em></li>
+</ul>
+<p>本文开始线性分类器的学习。</p>
+<p>和KNN相比，线性分类器才算得上真正具有实用价值的分类器，也是后面神经网络和卷积神经网络的基础。&nbsp;</p>
+<p>线性分类器中包括几个非常重要的部分：</p>
+<ul>
+<li>权重矩阵W，偏差向量b</li>
+<li>评分函数</li>
+<li>损失函数
+<ul>
+<li><span style="font-style: italic">正则化</span></li>
+<li><em>最优化</em></li>
+</ul>
+</li>
+</ul>
+<p>权重矩阵W （Weights）</p>
+<ul>
+<li>可以理解为所有分类对应的模版向量w组成的矩阵，模版就是分类期望成为的样子。</li>
+<li>训练数据可以理解为是N维空间中的一个向量v，v和W中每个模版做点积，点积越大，表示两个向量的夹角越小，也就越接近。</li>
+<li>点积最大的模版w，就是v所对应的分类。</li>
+<li>W不是一直不变的。它会随着对损失函数最优化的过程，不断的调整。</li>
+</ul>
+<p>偏差向量b （bias vector）</p>
+<p>　　b是不是可以理解为，如果不设置b，那所有的分类线都要通过原点，那其实就起不到分类的作用了？</p>
+<p>&nbsp; &nbsp; &nbsp; 参考下图？三条线都通过原点，是无法对数据做分类的。</p>
+<p>　　W和b分别对直线做旋转和平移。</p>
+<p>评分函数（score function）</p>
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<img src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/1363151-20180709201228710-570252798.png" alt="" width="228" height="42" class="medium-zoom-image"></p>
+<p>　 &nbsp; 之所以是线性分类器，就是因为评分函数使用线性方程计算分数。后面的神经网络会对线性函数做非线性处理。</p>
+<p>&nbsp; &nbsp; &nbsp; 下图直观的展示了分类器的线性。</p>
+<p>&nbsp;　　　　　　　　　　　　<img src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/1363151-20180709204052599-1216637258.png" alt="" width="426" height="312" class="medium-zoom-image"></p>
+<p>损失函数 （loss function）</p>
+<p>如何判断当前的W和b是否合适，是否能够输出准确的分类？</p>
+<p>通过损失函数，就可以计算预测的分类和实际分类之间的差异。通过不断减小损失函数的值，也就是减少差异，就可以得到对应的W和b。</p>
+<p>&nbsp;</p>
+<p><span style="font-size: 16px"><strong>Python实现</strong></span></p>
+<p><strong>数据预处理</strong></p>
+<div class="cnblogs_code"><div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/copycode.gif" alt="复制代码"></a></span></div>
+<pre># 每行均值<br>mean_image = np.mean(X_train, axis=<span style="color: rgba(0, 0, 0, 1)">0)
+
+</span><span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> second: subtract the mean image from train and test data</span><span style="color: rgba(0, 128, 0, 1)">
+#</span><span style="color: rgba(0, 128, 0, 1)"> 零均值化，中心化，使数据分布在原点周围，可以加快训练的收敛速度</span>
+X_train -=<span style="color: rgba(0, 0, 0, 1)"> mean_image
+X_val </span>-=<span style="color: rgba(0, 0, 0, 1)"> mean_image
+X_test </span>-=<span style="color: rgba(0, 0, 0, 1)"> mean_image
+X_dev </span>-= mean_image</pre>
+<div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/copycode.gif" alt="复制代码"></a></span></div></div>
+<p><strong>&nbsp;处理b的技巧</strong></p>
+<p>&nbsp;<img src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/1363151-20180710213059141-117558414.png" alt="" width="472" height="178" class="medium-zoom-image"></p>
+<div class="cnblogs_code"><div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/copycode.gif" alt="复制代码"></a></span></div>
+<pre><span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> third: append the bias dimension of ones (i.e. bias trick) so that our SVM</span><span style="color: rgba(0, 128, 0, 1)">
+#</span><span style="color: rgba(0, 128, 0, 1)"> only has to worry about optimizing a single weight matrix W.</span>
+
+<span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> 技巧，将bias加到矩阵中，作为最后一列，直接参与矩阵运算。不用单独计算。</span><span style="color: rgba(0, 128, 0, 1)">
+#</span><span style="color: rgba(0, 128, 0, 1)"> hstack，水平地把数组的列组合起来</span><span style="color: rgba(0, 128, 0, 1)">
+#</span><span style="color: rgba(0, 128, 0, 1)"> 每行后面 加一个元素1</span>
+<span style="color: rgba(0, 0, 0, 1)">
+X_train </span>= np.hstack([X_train, np.ones((X_train.shape[0], 1<span style="color: rgba(0, 0, 0, 1)">))])
+X_val </span>= np.hstack([X_val, np.ones((X_val.shape[0], 1<span style="color: rgba(0, 0, 0, 1)">))])
+X_test </span>= np.hstack([X_test, np.ones((X_test.shape[0], 1<span style="color: rgba(0, 0, 0, 1)">))])
+X_dev </span>= np.hstack([X_dev, np.ones((X_dev.shape[0], 1))])</pre>
+<div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/copycode.gif" alt="复制代码"></a></span></div></div>
+<p><strong>计算损失函数&nbsp;</strong></p>
+<p>&nbsp; 使用多类支持向量机作为损失函数。&nbsp;SVM loss function,</p>
+<p>&nbsp;&nbsp;　　　　　　　　　　　　　　　　<img src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/1363151-20180709211530137-1007670834.png" alt="" width="233" height="57" class="medium-zoom-image">, &nbsp; &nbsp; &nbsp;<img src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/1363151-20180709212152415-2036304137.png" alt="" width="140" height="50"></p>
+<p>&nbsp;<img src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/1363151-20180709212111495-1147120171.png" alt="" width="503" height="64" class="medium-zoom-image"></p>
+<p>&nbsp;全体训练集上的平均损失值：</p>
+<p>　　　　　　　　　　　　　　　　　　<img src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/1363151-20180709212619398-532253181.png" alt="" width="132" height="69">　　　　</p>
+<p>&nbsp;为了体现向量计算的高效，这里给出了非向量计算作为对比。</p>
+<p>&nbsp;非向量版：</p>
+<div class="cnblogs_code"><div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/copycode.gif" alt="复制代码"></a></span></div>
+<pre><span style="color: rgba(0, 128, 128, 1)"> 1</span> <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> 多类支持向量机损失函数</span>
+<span style="color: rgba(0, 128, 128, 1)"> 2</span> <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> SVM的损失函数想要SVM在正确分类上的得分始终比不正确分类上的得分高出一个边界值Delta</span>
+<span style="color: rgba(0, 128, 128, 1)"> 3</span> <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> max(0, s1 - s2 + delta)</span>
+<span style="color: rgba(0, 128, 128, 1)"> 4</span> <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> s1,错误分类， s2，正确分类</span>
+<span style="color: rgba(0, 128, 128, 1)"> 5</span> <span style="color: rgba(0, 0, 255, 1)">def</span><span style="color: rgba(0, 0, 0, 1)"> svm_loss_naive(W, X, y, reg):
+</span><span style="color: rgba(0, 128, 128, 1)"> 6</span> 
+<span style="color: rgba(0, 128, 128, 1)"> 7</span>   <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> N, 500</span>
+<span style="color: rgba(0, 128, 128, 1)"> 8</span>   <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> D, 3073</span>
+<span style="color: rgba(0, 128, 128, 1)"> 9</span>   <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> C, 10</span>
+<span style="color: rgba(0, 128, 128, 1)">10</span>   <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> W (3073, 10), 用（1，3073）左乘W，得到（1， 10）</span>
+<span style="color: rgba(0, 128, 128, 1)">11</span>   <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> X(500, 3073), y(500,)</span>
+<span style="color: rgba(0, 128, 128, 1)">12</span> 
+<span style="color: rgba(0, 128, 128, 1)">13</span>   <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> 对W求导。 后面求使损失函数L减小的最快的w，也就是梯度下降最快的方向。</span>
+<span style="color: rgba(0, 128, 128, 1)">14</span>   dW = np.zeros(W.shape) <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> initialize the gradient as zero</span>
+<span style="color: rgba(0, 128, 128, 1)">15</span>     
+<span style="color: rgba(0, 128, 128, 1)">16</span>   <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> compute the loss and the gradient</span>
+<span style="color: rgba(0, 128, 128, 1)">17</span>   num_classes = W.shape[1] <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> 10</span>
+<span style="color: rgba(0, 128, 128, 1)">18</span>   num_train = X.shape[0]     <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> 500</span>
+<span style="color: rgba(0, 128, 128, 1)">19</span>   loss = 0.0
+<span style="color: rgba(0, 128, 128, 1)">20</span>   <span style="color: rgba(0, 0, 255, 1)">for</span> i <span style="color: rgba(0, 0, 255, 1)">in</span><span style="color: rgba(0, 0, 0, 1)"> range(num_train):
+</span><span style="color: rgba(0, 128, 128, 1)">21</span>     <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> 分数 = 点积</span>
+<span style="color: rgba(0, 128, 128, 1)">22</span>     <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> 向量(1,D)和矩阵(D,C)的点积 = (1,C)    (c,)</span>
+<span style="color: rgba(0, 128, 128, 1)">23</span>     <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> scores中的一行，表示所有类的打分</span>
+<span style="color: rgba(0, 128, 128, 1)">24</span>     scores =<span style="color: rgba(0, 0, 0, 1)"> X[i].dot(W)
+</span><span style="color: rgba(0, 128, 128, 1)">25</span> 
+<span style="color: rgba(0, 128, 128, 1)">26</span>     <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> y[i]，对的分类</span>
+<span style="color: rgba(0, 128, 128, 1)">27</span>     correct_class_score =<span style="color: rgba(0, 0, 0, 1)"> scores[y[i]]
+</span><span style="color: rgba(0, 128, 128, 1)">28</span>     <span style="color: rgba(0, 0, 255, 1)">for</span> j <span style="color: rgba(0, 0, 255, 1)">in</span><span style="color: rgba(0, 0, 0, 1)"> range(num_classes):
+</span><span style="color: rgba(0, 128, 128, 1)">29</span>       <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> 相等的分类不做处理</span>
+<span style="color: rgba(0, 128, 128, 1)">30</span>       <span style="color: rgba(0, 0, 255, 1)">if</span> j ==<span style="color: rgba(0, 0, 0, 1)"> y[i]:
+</span><span style="color: rgba(0, 128, 128, 1)">31</span>         <span style="color: rgba(0, 0, 255, 1)">continue</span>
+<span style="color: rgba(0, 128, 128, 1)">32</span>       <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> 用其他分类的得分 - 最终分类的得分 + 1</span>
+<span style="color: rgba(0, 128, 128, 1)">33</span>       margin = scores[j] - correct_class_score + 1 <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> note delta = 1</span>
+<span style="color: rgba(0, 128, 128, 1)">34</span>        
+<span style="color: rgba(0, 128, 128, 1)">35</span>       <span style="color: rgba(0, 0, 255, 1)">if</span> margin &gt;<span style="color: rgba(0, 0, 0, 1)"> 0:
+</span><span style="color: rgba(0, 128, 128, 1)">36</span>         loss +=<span style="color: rgba(0, 0, 0, 1)"> margin
+</span><span style="color: rgba(0, 128, 128, 1)">37</span>         
+<span style="color: rgba(0, 128, 128, 1)">38</span>         <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> （错的-对的），所以第一个是-X，第二个是X</span>
+<span style="color: rgba(0, 128, 128, 1)">39</span>         <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> 500张图片的dW和，后面再除个500</span>
+<span style="color: rgba(0, 128, 128, 1)">40</span>         dW[ :, y[i] ] += -<span style="color: rgba(0, 0, 0, 1)">X[ i, : ]
+</span><span style="color: rgba(0, 128, 128, 1)">41</span>         dW[ :, j ] +=<span style="color: rgba(0, 0, 0, 1)"> X[ i, : ]
+</span><span style="color: rgba(0, 128, 128, 1)">42</span>         
+<span style="color: rgba(0, 128, 128, 1)">43</span>   loss /=<span style="color: rgba(0, 0, 0, 1)"> num_train
+</span><span style="color: rgba(0, 128, 128, 1)">44</span>   dW /=<span style="color: rgba(0, 0, 0, 1)"> num_train
+</span><span style="color: rgba(0, 128, 128, 1)">45</span> 
+<span style="color: rgba(0, 128, 128, 1)">46</span>   <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> Add regularization to the loss.</span>
+<span style="color: rgba(0, 128, 128, 1)">47</span>   <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> 正则化，https://blog.csdn.net/gsww404/article/details/80414675</span>
+<span style="color: rgba(0, 128, 128, 1)">48</span>   <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> L2正则化  </span>
+<span style="color: rgba(0, 128, 128, 1)">49</span>   loss += reg * np.sum(W *<span style="color: rgba(0, 0, 0, 1)"> W)
+</span><span style="color: rgba(0, 128, 128, 1)">50</span> 
+<span style="color: rgba(0, 128, 128, 1)">51</span>   <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> 这里为什么不是2W</span>
+<span style="color: rgba(0, 128, 128, 1)">52</span>   dW += reg *<span style="color: rgba(0, 0, 0, 1)"> W
+</span><span style="color: rgba(0, 128, 128, 1)">53</span>     
+<span style="color: rgba(0, 128, 128, 1)">54</span>   <span style="color: rgba(0, 0, 255, 1)">return</span> loss, dW</pre>
+<div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/copycode.gif" alt="复制代码"></a></span></div></div>
+<p>向量版：</p>
+<div class="cnblogs_code"><div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/copycode.gif" alt="复制代码"></a></span></div>
+<pre><span style="color: rgba(0, 0, 255, 1)">def</span><span style="color: rgba(0, 0, 0, 1)"> svm_loss_vectorized(W, X, y, reg):
+  loss </span>= 0.0<span style="color: rgba(0, 0, 0, 1)">
+  dW </span>= np.zeros(W.shape) <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> initialize the gradient as zero</span>
+<span style="color: rgba(0, 0, 0, 1)">
+  num_classes </span>= W.shape[1<span style="color: rgba(0, 0, 0, 1)">]
+  num_train </span>=<span style="color: rgba(0, 0, 0, 1)"> X.shape[0]
+
+  scores </span>= X.dot(W) <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> (500, 10)</span>
+  correct_scores = scores[ np.arange(num_train),  y]  <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)">(500, ),  取( 0～500， y[0~500]) </span>
+<span style="color: rgba(0, 0, 0, 1)">
+  correct_scores </span>= np.tile(correct_scores.reshape(num_train, 1) , (1, num_classes)) <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> (500, 10), 复制出10列，一行里的值是相同的</span>
+  margin = scores - correct_scores + 1<span style="color: rgba(0, 0, 0, 1)">
+
+  margin[np.arange(num_train), y] </span>= 0 <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> 正确的分类，不考虑</span>
+  margin[margin &lt; 0] = 0  　　　　　　  <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> 小于0的置为0，不考虑</span>
+  loss = np.sum(margin) /<span style="color: rgba(0, 0, 0, 1)"> num_train
+  loss </span>+= reg * np.sum(W *<span style="color: rgba(0, 0, 0, 1)"> W)
+  
+  margin[ margin </span>&gt; 0 ] = 1  <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> 大于0的是造成损失的权重</span>
+  row_sum = np.sum( margin, axis = 1 ) <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> 对每行取和， dW[ :, y[i] ] += -X[ i, : ]， 参考非向量的写法，每次遍历里，正确的分类都有被减一次</span>
+  margin[np.arange( num_train ), y] = -row_sum <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> 正确分类是负的，-X</span>
+  <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> 点积</span>
+  dW += np.dot(X.T, margin) / num_train + reg *<span style="color: rgba(0, 0, 0, 1)"> W  
+
+  </span><span style="color: rgba(0, 0, 255, 1)">return</span> loss, dW</pre>
+<div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/copycode.gif" alt="复制代码"></a></span></div></div>
+<p>随机初始化W，计算loss和gradient</p>
+<div class="cnblogs_code">
+<pre><span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> randn，高斯分布（正态分布）随机数</span><span style="color: rgba(0, 128, 0, 1)">
+#</span><span style="color: rgba(0, 128, 0, 1)"> 初始权重采用小一点的值</span>
+W = np.random.randn(3073, 10) * 0.0001<span style="color: rgba(0, 0, 0, 1)"> 
+<br># grad，analytic gradient
+loss, grad </span>= svm_loss_naive(W, X_dev, y_dev, 0.000005)</pre>
+</div>
+<p>&nbsp;</p>
+<p>检查梯度值的正确性。用数值梯度值（numerical gradient）和分析梯度值（analytic gradient）比较。&nbsp;</p>
+<p>检查梯度方法：</p>
+<div class="cnblogs_code"><div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/copycode.gif" alt="复制代码"></a></span></div>
+<pre><span style="color: rgba(0, 0, 255, 1)">def</span> grad_check_sparse(f, x, analytic_grad, num_checks=10, h=1e-5<span style="color: rgba(0, 0, 0, 1)">):
+  </span><span style="color: rgba(0, 0, 255, 1)">for</span> i <span style="color: rgba(0, 0, 255, 1)">in</span><span style="color: rgba(0, 0, 0, 1)"> range(num_checks):
+    </span><span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> 随机取一个位置</span>
+    ix = tuple([randrange(m) <span style="color: rgba(0, 0, 255, 1)">for</span> m <span style="color: rgba(0, 0, 255, 1)">in</span><span style="color: rgba(0, 0, 0, 1)"> x.shape])
+
+    oldval </span>=<span style="color: rgba(0, 0, 0, 1)"> x[ix]
+    x[ix] </span>= oldval + h <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> increment by h</span>
+    fxph = f(x) <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> evaluate f(x + h)</span>
+    x[ix] = oldval - h <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> increment by h  # decrement ？</span>
+    fxmh = f(x) <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> evaluate f(x - h)</span>
+    x[ix] = oldval <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> reset</span>
+
+    <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> 对称差分</span>
+    grad_numerical = (fxph - fxmh) / (2 *<span style="color: rgba(0, 0, 0, 1)"> h)
+    grad_analytic </span>=<span style="color: rgba(0, 0, 0, 1)"> analytic_grad[ix]
+    
+    </span><span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> 相对误差 ？？</span>
+    rel_error = abs(grad_numerical - grad_analytic) / (abs(grad_numerical) + abs(grad_analytic))</pre>
+<div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/copycode.gif" alt="复制代码"></a></span></div></div>
+<p>比较分析梯度和数值梯度：</p>
+<div class="cnblogs_code"><div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/copycode.gif" alt="复制代码"></a></span></div>
+<pre><span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> 检查计算的梯度值是否正确</span><span style="color: rgba(0, 128, 0, 1)">
+#</span><span style="color: rgba(0, 128, 0, 1)"> Compute the loss and its gradient at W.</span>
+loss, grad = svm_loss_naive(W, X_dev, y_dev, 0.0<span style="color: rgba(0, 0, 0, 1)">)
+
+</span><span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> Numerically compute the gradient along several randomly chosen dimensions, and</span><span style="color: rgba(0, 128, 0, 1)">
+#</span><span style="color: rgba(0, 128, 0, 1)"> compare them with your analytically computed gradient. The numbers should match</span><span style="color: rgba(0, 128, 0, 1)">
+#</span><span style="color: rgba(0, 128, 0, 1)"> almost exactly along all dimensions.</span>
+<span style="color: rgba(0, 0, 255, 1)">from</span> cs231n.gradient_check <span style="color: rgba(0, 0, 255, 1)">import</span><span style="color: rgba(0, 0, 0, 1)"> grad_check_sparse
+f </span>= <span style="color: rgba(0, 0, 255, 1)">lambda</span> w: svm_loss_naive(w, X_dev, y_dev, 0.0)[0] <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> 取loss</span>
+grad_numerical =<span style="color: rgba(0, 0, 0, 1)"> grad_check_sparse(f, W, grad)
+
+</span><span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> do the gradient check once again with regularization turned on</span><span style="color: rgba(0, 128, 0, 1)">
+#</span><span style="color: rgba(0, 128, 0, 1)"> you didn't forget the regularization gradient did you?</span>
+loss, grad = svm_loss_naive(W, X_dev, y_dev, 5e1<span style="color: rgba(0, 0, 0, 1)">)
+f </span>= <span style="color: rgba(0, 0, 255, 1)">lambda</span> w: svm_loss_naive(w, X_dev, y_dev, 5e1<span style="color: rgba(0, 0, 0, 1)">)[0]
+grad_numerical </span>= grad_check_sparse(f, W, grad)</pre>
+<div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/copycode.gif" alt="复制代码"></a></span></div></div>
+<p>&nbsp;</p>
+<p><strong>创建一个线性分类器类</strong></p>
+<p>最优化方法使用 随机梯度下降法（SGD，Stochastic Gradient Descent）。</p>
+<div class="cnblogs_code"><div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/copycode.gif" alt="复制代码"></a></span></div>
+<pre><span style="color: rgba(0, 0, 255, 1)">class</span><span style="color: rgba(0, 0, 0, 1)"> LinearClassifier(object):
+
+  </span><span style="color: rgba(0, 0, 255, 1)">def</span> <span style="color: rgba(128, 0, 128, 1)">__init__</span><span style="color: rgba(0, 0, 0, 1)">(self):
+    self.W </span>=<span style="color: rgba(0, 0, 0, 1)"> None
+
+  </span><span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> 训练，也是最优化，调参的过程。</span>
+  <span style="color: rgba(0, 0, 255, 1)">def</span> train(self, X, y, learning_rate=1e-3, reg=1e-5, num_iters=100<span style="color: rgba(0, 0, 0, 1)">,
+            batch_size</span>=200, verbose=<span style="color: rgba(0, 0, 0, 1)">False):
+    </span><span style="color: rgba(128, 0, 0, 1)">"""</span><span style="color: rgba(128, 0, 0, 1)">
+    Train this linear classifier using stochastic gradient descent.
+
+    Inputs:
+    - X: A numpy array of shape (N, D) containing training data; there are N
+      training samples each of dimension D.
+    - y: A numpy array of shape (N,) containing training labels; y[i] = c
+      means that X[i] has label 0 &lt;= c &lt; C for C classes. C是所有类别吧？
+    - learning_rate: (float) learning rate for optimization.
+    - reg: (float) regularization strength.
+    - num_iters: (integer) number of steps to take when optimizing
+    - batch_size: (integer) number of training examples to use at each step.
+    - verbose: (boolean) If true, print progress during optimization.
+
+    Outputs:
+    A list containing the value of the loss function at each training iteration.
+    </span><span style="color: rgba(128, 0, 0, 1)">"""</span><span style="color: rgba(0, 0, 0, 1)">
+    num_train, dim </span>=<span style="color: rgba(0, 0, 0, 1)"> X.shape
+    num_classes </span>= np.max(y) + 1 <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> assume y takes values 0...K-1 where K is number of classes</span>
+    <span style="color: rgba(0, 0, 255, 1)">if</span> self.W <span style="color: rgba(0, 0, 255, 1)">is</span><span style="color: rgba(0, 0, 0, 1)"> None:
+      self.W </span>= 0.001 *<span style="color: rgba(0, 0, 0, 1)"> np.random.randn(dim, num_classes)
+
+    loss_history </span>=<span style="color: rgba(0, 0, 0, 1)"> []
+    </span><span style="color: rgba(0, 0, 255, 1)">for</span> it <span style="color: rgba(0, 0, 255, 1)">in</span><span style="color: rgba(0, 0, 0, 1)"> range(num_iters):
+      X_batch </span>=<span style="color: rgba(0, 0, 0, 1)"> None
+      y_batch </span>=<span style="color: rgba(0, 0, 0, 1)"> None
+
+      </span><span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> 默认是replacement = true， 随机出来的数，还要再放回到样本池中</span>
+      randomRows =<span style="color: rgba(0, 0, 0, 1)"> np.random.choice(num_train, batch_size)
+      X_batch </span>=<span style="color: rgba(0, 0, 0, 1)"> X[randomRows] 
+      y_batch </span>=<span style="color: rgba(0, 0, 0, 1)"> y[randomRows]
+
+      </span><span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> evaluate loss and gradient</span>
+      loss, grad =<span style="color: rgba(0, 0, 0, 1)"> self.loss(X_batch, y_batch, reg)
+      loss_history.append(loss)
+
+      </span><span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> perform parameter update</span>
+      self.W += -learning_rate *<span style="color: rgba(0, 0, 0, 1)"> grad
+
+      </span><span style="color: rgba(0, 0, 255, 1)">if</span> verbose <span style="color: rgba(0, 0, 255, 1)">and</span> it % 100 ==<span style="color: rgba(0, 0, 0, 1)"> 0:
+        </span><span style="color: rgba(0, 0, 255, 1)">print</span>(<span style="color: rgba(128, 0, 0, 1)">'</span><span style="color: rgba(128, 0, 0, 1)">iteration %d / %d: loss %f</span><span style="color: rgba(128, 0, 0, 1)">'</span> %<span style="color: rgba(0, 0, 0, 1)"> (it, num_iters, loss))
+
+    </span><span style="color: rgba(0, 0, 255, 1)">return</span><span style="color: rgba(0, 0, 0, 1)"> loss_history
+
+  </span><span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> 预测</span>
+  <span style="color: rgba(0, 0, 255, 1)">def</span><span style="color: rgba(0, 0, 0, 1)"> predict(self, X):
+</span><span style="color: rgba(0, 0, 0, 1)">    y_pred </span>=<span style="color: rgba(0, 0, 0, 1)"> np.zeros(X.shape[0])
+    y_pred </span>= np.argmax( np.dot( X, self.W ), axis=1<span style="color: rgba(0, 0, 0, 1)"> )
+
+    </span><span style="color: rgba(0, 0, 255, 1)">return</span><span style="color: rgba(0, 0, 0, 1)"> y_pred
+  
+  </span><span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> 计算损失值</span>
+  <span style="color: rgba(0, 0, 255, 1)">def</span><span style="color: rgba(0, 0, 0, 1)"> loss(self, X_batch, y_batch, reg):
+    </span><span style="color: rgba(0, 0, 255, 1)">pass</span></pre>
+<div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/copycode.gif" alt="复制代码"></a></span></div></div>
+<p>继承基类LinearClassifier，定义SVM分类器</p>
+<div class="cnblogs_code">
+<pre><span style="color: rgba(0, 0, 255, 1)">class</span><span style="color: rgba(0, 0, 0, 1)"> LinearSVM(LinearClassifier):
+  </span><span style="color: rgba(128, 0, 0, 1)">"""</span><span style="color: rgba(128, 0, 0, 1)"> A subclass that uses the Multiclass SVM loss function </span><span style="color: rgba(128, 0, 0, 1)">"""</span>
+
+  <span style="color: rgba(0, 0, 255, 1)">def</span><span style="color: rgba(0, 0, 0, 1)"> loss(self, X_batch, y_batch, reg):
+    </span><span style="color: rgba(0, 0, 255, 1)">return</span> svm_loss_vectorized(self.W, X_batch, y_batch, reg)</pre>
+</div>
+<p>&nbsp;</p>
+<p>每次随机取出200个数据，训练1500次。 下图显示，损失值随着训练的迭代，追减降低。</p>
+<p>　　　　　　　　　　　　　　　　　　<img src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/1363151-20180710205955353-954364322.png" alt="" width="421" height="268" class="medium-zoom-image">&nbsp;</p>
+<pre></pre>
+<p>对于CIFAR-10的训练集和验证集的准确度如下。</p>
+<div>
+<div>training accuracy: 0.377939</div>
+<div>validation accuracy: 0.383000</div>
+<div>&nbsp;</div>
+<div>原文中还对学习率和Regulariztion Strength（不知道如何翻译好）做了各种调整。下面是各种组合的准确率统计。</div>
+<div>颜色越深，表示准确率越高。可以看出来较低的学习率，训练的准确率越高。但是学习率越低，训练的时间也就越长。这是一个需要权衡的地方。</div>
+<div>&nbsp;　　　　　　　　　　　　<img src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/1363151-20180710211554441-751593587.png" alt="" width="506" height="189" class="medium-zoom-image"></div>
+</div>
+<pre></pre>
+<pre></pre>
+<p>　　　　　　　　　　　　<img src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/1363151-20180710211625711-684895463.png" alt="" width="465" height="198" class="medium-zoom-image">&nbsp;</p>
+<p>&nbsp;</p>
+<p>下图是最终训练出来的W所对应的图片。从图中可以看出最终的W，通过5万张图的训练， 提取出了具有指定分类的特征。</p>
+<p>　　　　　　　　　　　　　　<img src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/1363151-20180710211850412-1304684194.png" alt="" width="411" height="224" class="medium-zoom-image"></p>
+<p>&nbsp;</p>
+<p>python相关：</p>
+<ul>
+<li>np.mean(a, axis=None)，
+<ul>
+<li>　　计算平均值。 axis=0，对整列计算均值。</li>
+</ul>
+</li>
+<li>np.hstack(tup)，
+<ul>
+<li>　　在水平方向上合并</li>
+</ul>
+</li>
+<li>np.vstack(tup),
+<ul>
+<li>　　在竖直方向上合并</li>
+</ul>
+</li>
+<li>np.stack(arrays, axis=0),
+<ul>
+<li>　　增加了一个维度，而且合并的两个的形状必须一样。</li>
+</ul>
+</li>
+<li>np.tile(A, reps)，
+<ul>
+<li>　　A是被重复的对象，reps是在不同维度上重复的次数</li>
+</ul>
+</li>
+<li>np.random.randn，
+<ul>
+<li>　　[0,1)范围内的随机数，满足高斯分布</li>
+</ul>
+</li>
+<li>tuple([randrange(m) for m in x.shape])，
+<ul>
+<li>　　随机选择x中的任意位置</li>
+</ul>
+</li>
+<li>f = lambda w: svm_loss_naive(w, X_dev, y_dev, 0.0)[0]，
+<ul>
+<li>　　lambda函数，w是参数，：后面是函数体。</li>
+</ul>
+</li>
+<li>np.random.choice(a, size=None, replace=True, p=None)，
+<ul>
+<li>　　从a中随机选择size个数。replace=True，表示随机取出的数，还要放回去。</li>
+</ul>
+</li>
+<li>np.max(a, axis=None, out=None, keepdims=np._NoValue)，
+<ul>
+<li>　　取最大值，也可以取每行或者每列中的最大值。</li>
+</ul>
+</li>
+<li>np.argmax，
+<ul>
+<li>　　和np.max类似，区别是返回的是索引。</li>
+</ul>
+</li>
+</ul>
+<p>&nbsp;</p>
+<p>Reference：</p>
+<p>1、知乎CS231n中文版，<a href="https://zhuanlan.zhihu.com/p/20918580?refer=intelligentunit" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/20918580?refer=intelligentunit</a></p>
+<p>&nbsp;</p>
+</div>
+<div class="clear"></div>
+<div id="blog_post_info_block" role="contentinfo"><div id="BlogPostCategory">
+    分类: 
+            <a href="https://www.cnblogs.com/jimobuwu/category/1233654.html" target="_blank">DL</a></div>
+
+
+    <div id="blog_post_info">
+<div id="green_channel">
+        <a href="javascript:void(0);" id="green_channel_digg" onclick="DiggIt(9187839,cb_blogId,1);green_channel_success(this,&#39;谢谢推荐！&#39;);">好文要顶</a>
+        <a id="green_channel_follow" onclick="follow(&#39;ce8d4b16-f953-4d52-cf70-08d58662b770&#39;);" href="javascript:void(0);">关注我</a>
+    <a id="green_channel_favorite" onclick="AddToWz(cb_entryId);return false;" href="javascript:void(0);">收藏该文</a>
+    <a id="green_channel_weibo" href="javascript:void(0);" title="分享至新浪微博" onclick="ShareToTsina()"><img src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/icon_weibo_24.png" alt=""></a>
+    <a id="green_channel_wechat" href="javascript:void(0);" title="分享至微信" onclick="shareOnWechat()"><img src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/wechat.png" alt=""></a>
+</div>
+<div id="author_profile">
+    <div id="author_profile_info" class="author_profile_info">
+            <a href="https://home.cnblogs.com/u/jimobuwu/" target="_blank"><img src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/sample_face.gif" class="author_avatar" alt=""></a>
+        <div id="author_profile_detail" class="author_profile_info">
+            <a href="https://home.cnblogs.com/u/jimobuwu/">jimobuwu</a><br>
+            <a href="https://home.cnblogs.com/u/jimobuwu/followees/">关注 - 1</a><br>
+            <a href="https://home.cnblogs.com/u/jimobuwu/followers/">粉丝 - 1</a>
+        </div>
+    </div>
+    <div class="clear"></div>
+    <div id="author_profile_honor"></div>
+    <div id="author_profile_follow">
+                <a href="javascript:void(0);" onclick="follow(&#39;ce8d4b16-f953-4d52-cf70-08d58662b770&#39;);return false;">+加关注</a>
+    </div>
+</div>
+<div id="div_digg">
+    <div class="diggit" onclick="votePost(9187839,&#39;Digg&#39;)">
+        <span class="diggnum" id="digg_count">0</span>
+    </div>
+    <div class="buryit" onclick="votePost(9187839,&#39;Bury&#39;)">
+        <span class="burynum" id="bury_count">0</span>
+    </div>
+    <div class="clear"></div>
+    <div class="diggword" id="digg_tips">
+    </div>
+</div>
+
+<script type="text/javascript">
+    currentDiggType = 0;
+</script></div>
+    <div class="clear"></div>
+    <div id="post_next_prev">
+
+    <a href="https://www.cnblogs.com/jimobuwu/p/9246660.html" class="p_n_p_prefix">« </a> 上一篇：    <a href="https://www.cnblogs.com/jimobuwu/p/9246660.html" title="发布于 2018-06-30 12:46">tensorboard的使用</a>
+    <br>
+    <a href="https://www.cnblogs.com/jimobuwu/p/9726861.html" class="p_n_p_prefix">» </a> 下一篇：    <a href="https://www.cnblogs.com/jimobuwu/p/9726861.html" title="发布于 2018-10-08 16:21">2.两数相加</a>
+
+</div>
+</div>
+            </div>
+            <div class="postDesc">posted @ 
+<span id="post-date">2018-07-10 21:24</span>&nbsp;
+<a href="https://www.cnblogs.com/jimobuwu/">jimobuwu</a>&nbsp;
+阅读(<span id="post_view_count">6564</span>)&nbsp;
+评论(<span id="post_comment_count">0</span>)&nbsp;
+<a href="https://i.cnblogs.com/EditPosts.aspx?postid=9187839" rel="nofollow">编辑</a>&nbsp;
+<a href="javascript:void(0)" onclick="AddToWz(9187839);return false;">收藏</a>&nbsp;
+<a href="javascript:void(0)" onclick="reportManager.report({ currentUserId: &#39;&#39;, targetType: &#39;blogPost&#39;, targetId: &#39;9187839&#39;, targetLink: &#39;https://www.cnblogs.com/jimobuwu/p/9187839.html&#39;, title: &#39;线性分类器及python实现&#39; })">举报</a></div>
+        </div>
+	    
+	    
+    </div><!--end: topics 文章、评论容器-->
+</div>
+
+<script>
+    var cb_entryId = 9187839, cb_entryCreatedDate = '2018-07-10 21:24', cb_postType = 1;
+    var allowComments = true, cb_blogId = 422476, cb_blogApp = 'jimobuwu', cb_blogUserGuid = 'ce8d4b16-f953-4d52-cf70-08d58662b770';
+    mermaidRender.render()
+    markdown_highlight()
+    zoomManager.apply("#cnblogs_post_body img:not(.code_img_closed):not(.code_img_opened)");
+    updatePostStats(
+            [cb_entryId],
+            function(id, count) { $("#post_view_count").text(count) },
+            function(id, count) { $("#post_comment_count").text(count) })
+</script>
+<a id="!comments"></a>
+<div id="blog-comments-placeholder"></div>
+<div id="comment_form" class="commentform">
+    <a name="commentform"></a>
+    <div id="divCommentShow"></div>
+    <div id="comment_nav"><span id="span_refresh_tips"></span><a href="javascript:void(0);" onclick="return RefreshCommentList();" id="lnk_RefreshComments" runat="server" clientidmode="Static">刷新评论</a><a href="https://www.cnblogs.com/jimobuwu/p/9187839.html#" onclick="return RefreshPage();">刷新页面</a><a href="https://www.cnblogs.com/jimobuwu/p/9187839.html#top">返回顶部</a></div>
+    <div id="comment_form_container" style="visibility: visible;"><div class="login_tips">
+    登录后才能查看或发表评论，立即 <a rel="nofollow" href="javascript:void(0);" class="underline" onclick="return account.login(&#39;!comments&#39;);">登录</a> 或者
+    <a href="https://www.cnblogs.com/">逛逛</a> 博客园首页
+</div>
+</div>
+    <div class="ad_text_commentbox" id="ad_text_under_commentbox"></div>
+    <div id="cnblogs_ch"><a href="https://developer.huawei.com/consumer/cn/forum/topic/0201820468285270027?fid=23&amp;ha_source=bokeyuan" target="_blank" onclick="gtag(&#39;event&#39;, &#39;click&#39;, {&#39;event_category&#39;: &#39;ad&#39;, &#39;event_label&#39;: &#39;T2-华为专区-HWD故事征集&#39;})">【推荐】华为 HWD 2022 故事征集，分享最打动你的科技女性故事</a><br><a href="https://brands.cnblogs.com/huawei" target="_blank" onclick="gtag(&#39;event&#39;, &#39;click&#39;, {&#39;event_category&#39;: &#39;ad&#39;, &#39;event_label&#39;: &#39;T2-华为专区&#39;})">【推荐】华为开发者专区，与开发者一起构建万物互联的智能世界</a><br></div>
+    <div id="opt_under_post"></div>
+    <div id="cnblogs_c1" class="under-post-card">
+            <div id="div-gpt-ad-1592365906576-0" style="width: 300px; height: 250px;" data-google-query-id="CM3firT_v_YCFQ-NvAodVM4LXg"><div id="google_ads_iframe_/1090369/C1_0__container__" style="border: 0pt none;"><iframe id="google_ads_iframe_/1090369/C1_0" name="google_ads_iframe_/1090369/C1_0" title="3rd party ad content" width="300" height="250" scrolling="no" marginwidth="0" marginheight="0" frameborder="0" role="region" aria-label="Advertisement" tabindex="0" sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-top-navigation-by-user-activation" style="border: 0px; vertical-align: bottom;" data-google-container-id="1" data-load-complete="true" src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/saved_resource.html"></iframe></div></div>
+    </div>
+    <div id="under_post_card1"><div class="under-post-card">
+<b>编辑推荐：</b>
+<br>
+
+· <a href="https://www.cnblogs.com/xxcanghai/p/ping-shi-de-gong-zuo-ru-he-ti-xian-yi-ge-ren-de-ji.html" target="_blank">平时的工作如何体现一个人的技术深度？</a>
+    <br>
+· <a href="https://www.cnblogs.com/coco1s/p/15974744.html" target="_blank">革命性创新，动画杀手锏 @scroll-timeline</a>
+    <br>
+· <a href="https://www.cnblogs.com/skevin/p/15974438.html" target="_blank">戏说领域驱动设计（十二）—— 服务 </a>
+    <br>
+· <a href="https://www.cnblogs.com/artech/p/inside-asp-net-core-6-16.html" target="_blank">ASP.NET Core 6框架揭秘实例演示[16]：内存缓存与分布式缓存的使用</a>
+    <br>
+· <a href="https://www.cnblogs.com/wei325/p/15957951.html" target="_blank">.Net Core 中无处不在的 Async/Await 是如何提升性能的？</a>
+    <br>
+</div></div>
+        <div id="cnblogs_c2" class="under-post-card">
+            <a href="https://developer.huawei.com/consumer/cn/forum/topic/0201820468285270027?fid=23&amp;ha_source=bokeyuan" rel="nofollow" target="_blank" onclick="countCreativeClicks(&#39;C2-华为专区-HWD2022&#39;)">
+                <img src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/35695-20220308114136319-1059306580.jpg" alt="" onload="countCreativeImpressions(&#39;C2-华为专区-HWD2022&#39;)">
+            </a>
+        </div>
+    <div id="under_post_card2"><div class="itnews under-post-card">
+    <b>最新新闻</b>：
+    <br>
+ ·          <a href="https://news.cnblogs.com/n/715593/" target="_blank">黑客大神用什么杀毒？Windows自带的就够，只是加了亿点微小强化</a>
+        <br>
+ ·          <a href="https://news.cnblogs.com/n/715592/" target="_blank">「八卦炉」炼丹规模直逼人脑！清华、阿里等搞了个174万亿参数大模型</a>
+        <br>
+ ·          <a href="https://news.cnblogs.com/n/715591/" target="_blank">AI发神经撞马路牙子！小马智行路试全无人自动驾驶结果「翻车」</a>
+        <br>
+ ·          <a href="https://news.cnblogs.com/n/715590/" target="_blank">考研国家线罕见大幅上涨，12个学科涨10分以上，超300万人将落榜</a>
+        <br>
+ ·          <a href="https://news.cnblogs.com/n/715589/" target="_blank">京东物流首份年报：再忍一忍，亏损是暂时的</a>
+        <br>
+    » <a href="https://news.cnblogs.com/" title="IT 新闻" target="_blank">更多新闻...</a>
+</div></div>
+    <div id="HistoryToday" class="under-post-card"></div>
+    <script type="text/javascript">
+        var commentManager = new blogCommentManager();
+        commentManager.renderComments(0);
+        fixPostBody();
+
+                window.tocManager.displayDisableTocTips = false;
+                window.tocManager.generateToc();
+            setTimeout(function() { incrementViewCount(cb_entryId); }, 50);        deliverT2();
+        deliverC1C2();
+        loadNewsAndKb();
+LoadPostCategoriesTags(cb_blogId, cb_entryId);        LoadPostInfoBlock(cb_blogId, cb_entryId, cb_blogApp, cb_blogUserGuid);
+        GetPrevNextPost(cb_entryId, cb_blogId, cb_entryCreatedDate, cb_postType);
+        loadOptUnderPost();
+        GetHistoryToday(cb_blogId, cb_blogApp, cb_entryCreatedDate);
+    </script>
+</div>
+
+	</div><!--end: forFlow -->
+	</div><!--end: mainContent 主体内容容器-->
+	<div id="sideBar">
+		<div id="sideBarMain">
+			<div id="sidebar_news" class="newsItem"><!--done-->
+<h3 class="catListTitle">公告</h3>
+
+<div id="blog-news">
+    
+    <div id="profile_block">
+        昵称：
+        <a href="https://home.cnblogs.com/u/jimobuwu/">
+            jimobuwu
+        </a>
+        <br>
+        园龄：
+        <a href="https://home.cnblogs.com/u/jimobuwu/" title="入园时间：2018-03-28">
+            3年11个月
+        </a>
+        <br>
+        粉丝：
+        <a href="https://home.cnblogs.com/u/jimobuwu/followers/">
+            1
+        </a>
+        <br>
+        关注：
+        <a href="https://home.cnblogs.com/u/jimobuwu/followees/">
+            1
+        </a>
+        <div id="p_b_follow">
+<a href="javascript:void(0)" onclick="follow(&#39;ce8d4b16-f953-4d52-cf70-08d58662b770&#39;)">+加关注</a></div>
+        <script>getFollowStatus('ce8d4b16-f953-4d52-cf70-08d58662b770');</script>
+    </div>
+</div>
+
+</div>
+<div id="sidebar_c3"></div>
+			<div id="blog-calendar" style="">
+
+<table id="blogCalendar" class="Cal" cellspacing="0" cellpadding="0" title="Calendar" border="0">
+    <tbody>
+        <tr>
+            <td colspan="7">
+                <table class="CalTitle" cellspacing="0" border="0">
+                    <tbody>
+                        <tr>
+                            <td class="CalNextPrev">
+                                <a href="javascript:void(0);" onclick="loadBlogCalendar(&#39;2022/02/12&#39;); return false;">&lt;</a>
+                            </td>
+                            <td align="center">2022年3月</td>
+                            <td align="right" class="CalNextPrev">
+                                <a href="javascript:void(0);" onclick="loadBlogCalendar(&#39;2022/04/12&#39;); return false;">&gt;</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+    <tr>
+        <th class="CalDayHeader" align="center" abbr="日" scope="col">日</th>
+        <th class="CalDayHeader" align="center" abbr="一" scope="col">一</th>
+        <th class="CalDayHeader" align="center" abbr="二" scope="col">二</th>
+        <th class="CalDayHeader" align="center" abbr="三" scope="col">三</th>
+        <th class="CalDayHeader" align="center" abbr="四" scope="col">四</th>
+        <th class="CalDayHeader" align="center" abbr="五" scope="col">五</th>
+        <th class="CalDayHeader" align="center" abbr="六" scope="col">六</th>
+    </tr>
+            <tr>
+                            <td class="CalOtherMonthDay" align="center">27</td>
+                            <td class="CalOtherMonthDay" align="center">28</td>
+                        <td class="" align="center">
+                            1
+                        </td>
+                        <td class="" align="center">
+                            2
+                        </td>
+                        <td class="" align="center">
+                            3
+                        </td>
+                        <td class="" align="center">
+                            4
+                        </td>
+                    <td class="CalWeekendDay" align="center">
+                        5
+                    </td>
+            </tr>
+                <tr>
+                        <td class="CalWeekendDay" align="center">
+                            6
+                        </td>
+                            <td class="" align="center">
+                                7
+                            </td>
+                            <td class="" align="center">
+                                8
+                            </td>
+                            <td class="" align="center">
+                                9
+                            </td>
+                            <td class="" align="center">
+                                10
+                            </td>
+                            <td class="" align="center">
+                                11
+                            </td>
+                        <td class="CalTodayDay" align="center">
+                            12
+                        </td>
+                </tr>
+                <tr>
+                        <td class="CalWeekendDay" align="center">
+                            13
+                        </td>
+                            <td class="" align="center">
+                                14
+                            </td>
+                            <td class="" align="center">
+                                15
+                            </td>
+                            <td class="" align="center">
+                                16
+                            </td>
+                            <td class="" align="center">
+                                17
+                            </td>
+                            <td class="" align="center">
+                                18
+                            </td>
+                        <td class="CalWeekendDay" align="center">
+                            19
+                        </td>
+                </tr>
+                <tr>
+                        <td class="CalWeekendDay" align="center">
+                            20
+                        </td>
+                            <td class="" align="center">
+                                21
+                            </td>
+                            <td class="" align="center">
+                                22
+                            </td>
+                            <td class="" align="center">
+                                23
+                            </td>
+                            <td class="" align="center">
+                                24
+                            </td>
+                            <td class="" align="center">
+                                25
+                            </td>
+                        <td class="CalWeekendDay" align="center">
+                            26
+                        </td>
+                </tr>
+                <tr>
+                        <td class="CalWeekendDay" align="center">
+                            27
+                        </td>
+                            <td class="" align="center">
+                                28
+                            </td>
+                            <td class="" align="center">
+                                29
+                            </td>
+                            <td class="" align="center">
+                                30
+                            </td>
+                            <td class="" align="center">
+                                31
+                            </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                1
+                            </td>
+                        <td class="CalOtherMonthDay" align="center">
+                            2
+                        </td>
+                </tr>
+                <tr>
+                        <td class="CalOtherMonthDay" align="center">
+                            3
+                        </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                4
+                            </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                5
+                            </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                6
+                            </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                7
+                            </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                8
+                            </td>
+                        <td class="CalOtherMonthDay" align="center">
+                            9
+                        </td>
+                </tr>
+    </tbody>
+</table></div><script>loadBlogDefaultCalendar();</script>			
+			<div id="leftcontentcontainer">
+				<div id="blog-sidecolumn"><!-- 搜索 -->
+<div id="sidebar_search" class="sidebar-block">
+    <div id="sidebar_search" class="mySearch">
+        <h3 class="catListTitle">搜索</h3>
+        <div id="sidebar_search_box">
+            <div id="widget_my_zzk" class="div_my_zzk">
+                <input type="text" id="q" onkeydown="return zzk_go_enter(event);" class="input_my_zzk">&nbsp;<input onclick="zzk_go()" type="button" value="找找看" id="btnZzk" class="btn_my_zzk">
+            </div>
+            <div id="widget_my_google" class="div_my_zzk">
+                <input type="text" name="google_q" id="google_q" onkeydown="return google_go_enter(event);" class="input_my_zzk">&nbsp;<input onclick="google_go()" type="button" value="谷歌搜索" class="btn_my_zzk">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 常用链接 -->
+<div id="sidebar_shortcut" class="sidebar-block"><div class="catListLink">
+<h3 class="catListTitle">
+常用链接
+</h3>
+<ul>
+    
+<li><a href="https://www.cnblogs.com/jimobuwu/p/" title="我的博客的随笔列表">我的随笔</a></li>
+<li><a href="https://www.cnblogs.com/jimobuwu/MyComments.html" title="我的发表过的评论列表">我的评论</a></li>
+<li><a href="https://www.cnblogs.com/jimobuwu/OtherPosts.html" title="我评论过的随笔列表">我的参与</a></li>
+<li><a href="https://www.cnblogs.com/jimobuwu/RecentComments.html" title="我的博客的评论列表">最新评论</a></li>
+<li><a href="https://www.cnblogs.com/jimobuwu/tag/" title="我的博客的标签列表">我的标签</a></li>
+
+</ul>
+</div>
+
+</div>
+
+<!-- 最新随笔 -->
+
+
+<!-- 我的标签 -->
+<div id="sidebar_toptags" class="sidebar-block"><div class="catListTag">
+<h3 class="catListTitle">我的标签</h3>
+<ul>
+        <li>
+            <a href="https://www.cnblogs.com/jimobuwu/tag/TensorFlow/">TensorFlow<span class="tag-count">(1)</span></a>
+        </li>
+        <li>
+            <a href="https://www.cnblogs.com/jimobuwu/tag/machine%20learning/">machine learning<span class="tag-count">(1)</span></a>
+        </li>
+        <li>
+            <a href="https://www.cnblogs.com/jimobuwu/tag/tensorboard/">tensorboard<span class="tag-count">(1)</span></a>
+        </li>
+        <li>
+            <a href="https://www.cnblogs.com/jimobuwu/tag/metatable/">metatable<span class="tag-count">(1)</span></a>
+        </li>
+        <li>
+            <a href="https://www.cnblogs.com/jimobuwu/tag/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">数据结构<span class="tag-count">(1)</span></a>
+        </li>
+        <li>
+            <a href="https://www.cnblogs.com/jimobuwu/tag/%E5%BA%95%E5%B1%82/">底层<span class="tag-count">(1)</span></a>
+        </li>
+        <li>
+            <a href="https://www.cnblogs.com/jimobuwu/tag/stl/">stl<span class="tag-count">(1)</span></a>
+        </li>
+    
+
+</ul>
+</div>
+
+</div>
+
+<!-- 积分与排名 -->
+
+
+<!-- 随笔分类、随笔档案、文章分类、新闻分类、相册、链接 -->
+<div id="sidebar_categories">
+
+    <div id="sidebar_postcategory" class="catListPostCategory sidebar-block">
+        <h3 class="catListTitle">
+            
+随笔分类
+<span style="font-size:11px;font-weight:normal">(31)</span>
+
+
+        </h3>
+
+        <ul>
+
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/jimobuwu/category/1187596.html" class="category-item-link" rel="" target="">c++(5)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/jimobuwu/category/1233654.html" class="category-item-link" rel="" target="">DL(6)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/jimobuwu/category/1206762.html" class="category-item-link" rel="" target="">leetcode(9)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/jimobuwu/category/1187593.html" class="category-item-link" rel="" target="">math(2)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/jimobuwu/category/1904535.html" class="category-item-link" rel="" target="">other(5)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/jimobuwu/category/1231468.html" class="category-item-link" rel="" target="">python(1)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/jimobuwu/category/1904533.html" class="category-item-link" rel="" target="">Tensorflow(3)</a>
+ 
+                </li>                
+            
+        </ul>
+
+
+    </div>    
+    <div id="sidebar_postarchive" class="catListPostArchive sidebar-block">
+        <h3 class="catListTitle">
+            
+随笔档案
+<span style="font-size:11px;font-weight:normal">(33)</span>
+
+
+        </h3>
+
+        <ul>
+
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/jimobuwu/archive/2019/01.html" class="category-item-link" rel="" target="">2019年1月(1)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/jimobuwu/archive/2018/12.html" class="category-item-link" rel="" target="">2018年12月(1)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/jimobuwu/archive/2018/11.html" class="category-item-link" rel="" target="">2018年11月(2)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/jimobuwu/archive/2018/10.html" class="category-item-link" rel="" target="">2018年10月(3)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/jimobuwu/archive/2018/07.html" class="category-item-link" rel="" target="">2018年7月(1)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/jimobuwu/archive/2018/06.html" class="category-item-link" rel="" target="">2018年6月(7)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/jimobuwu/archive/2018/05.html" class="category-item-link" rel="" target="">2018年5月(7)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/jimobuwu/archive/2018/04.html" class="category-item-link" rel="" target="">2018年4月(8)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/jimobuwu/archive/2018/03.html" class="category-item-link" rel="" target="">2018年3月(3)</a>
+ 
+                </li>                
+            
+        </ul>
+
+
+    </div>    
+</div>
+
+<!-- 最新评论 -->
+<!-- 阅读排行榜 -->
+<div id="sidebar_topviewedposts" class="sidebar-block"><div class="catListView">
+<h3 class="catListTitle">阅读排行榜</h3>
+	<div id="TopViewPostsBlock">
+        <ul style="word-break:break-all">
+                    <li>
+                        <a href="https://www.cnblogs.com/jimobuwu/p/9161531.html">
+                            1. CIFAR-10和python读取(11462)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.cnblogs.com/jimobuwu/p/9187839.html">
+                            2. 线性分类器及python实现(6563)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.cnblogs.com/jimobuwu/p/10277500.html">
+                            3. Tensorflow Lite -- camera demo(2632)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.cnblogs.com/jimobuwu/p/10078374.html">
+                            4. keras demo - fashion_mnist(2190)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.cnblogs.com/jimobuwu/p/9160737.html">
+                            5. 矩阵与线性方程组(1437)
+                        </a>
+                    </li>
+        </ul>
+    </div>
+</div>
+
+</div>
+
+<!-- 评论排行榜 -->
+<div id="sidebar_topcommentedposts" class="sidebar-block"></div>
+
+<!-- 推荐排行榜 -->
+<div id="sidebar_topdiggedposts" class="sidebar-block">
+<div id="topdigg_posts_wrap">
+    <div class="catListView">
+        <h3 class="catListTitle">推荐排行榜</h3>
+        <div id="TopDiggPostsBlock">
+            <ul style="word-break: break-all">
+                        <li>
+                            <a href="https://www.cnblogs.com/jimobuwu/p/9161531.html">
+                                1. CIFAR-10和python读取(1)
+                            </a>
+                        </li>
+            </ul>
+        </div>
+    </div>
+</div></div><div id="sidebar_recentcomments" class="sidebar-block"></div>
+
+
+</div>
+                    <script>loadBlogSideColumn();</script>
+			</div>			
+		</div><!--end: sideBarMain -->
+	</div><!--end: sideBar 侧边栏容器 -->
+	<div class="clear"></div>
+	</div><!--end: main -->
+	<div class="clear"></div>
+	<div id="footer">
+		<!--done-->
+Copyright © 2022 jimobuwu
+<br><span id="poweredby">Powered by .NET 6 on Kubernetes</span>
+
+
+
+	</div><!--end: footer -->
+</div><!--end: home 自定义的最大容器 -->
+
+
+    
+
+    <input type="hidden" id="antiforgery_token" value="CfDJ8GsLOKiGtk1Au0UP1SouGdW9z6qtPJ02ZNI5qjhPLsmwyQtEVb8qPgMuiJPD_nlCJgUPGVrqC6BB5QkA0NSo9yN-PMR5As7i71pfDBCg1AEtfy3UCnEKSHEFLfc_FPStMmzrimJpHKB8iljwEO-vlbU">
+    <script async="" src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/js"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    var kv = getGACustom();
+    if (kv) {
+        gtag('set', kv);
+    }
+    gtag('config', 'UA-476124-1');
+    </script>
+    <script defer="" src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/hm.js.下载"></script><iframe src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/container.html" style="visibility: hidden; display: none;"></iframe>
+
+<iframe src="线性分类器及python实现%20-%20jimobuwu%20-%20博客园_files/aframe.html" width="0" height="0" style="display: none;"></iframe></body></html>

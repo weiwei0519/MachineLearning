@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<!-- saved from url=(0045)https://www.cnblogs.com/zhibei/p/9391014.html -->
+<html lang="zh-cn"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="origin-when-crossorigin">
+    <meta name="description" content="维特比算法（Viterbi） 维特比算法 维特比算法shiyizhong 动态规划算法用于最可能产生观测时间序列的-维特比路径-隐含状态序列，特别是在马尔可夫信息源上下文和隐马尔科夫模型中。术语“维特">
+    <meta property="og:description" content="维特比算法（Viterbi） 维特比算法 维特比算法shiyizhong 动态规划算法用于最可能产生观测时间序列的-维特比路径-隐含状态序列，特别是在马尔可夫信息源上下文和隐马尔科夫模型中。术语“维特">
+    <meta http-equiv="Cache-Control" content="no-transform">
+    <meta http-equiv="Cache-Control" content="no-siteapp">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>维特比算法（Viterbi）及python实现样例 - 我们都是大好青年 - 博客园</title>
+    <link id="favicon" rel="shortcut icon" href="https://common.cnblogs.com/favicon.svg" type="image/svg+xml">
+    
+    <style>:not(.cnblogs_code):not(.cnblogs_Highlighter)>pre:not([class*="language-"]):not([highlighted]):not(.hljs) {
+        background: rgb(245, 245, 245);
+        padding: 5px;
+        border: 1px solid rgb(204, 204, 204);
+        border-radius: 3px;
+        border-color: transparent;
+        color: rgb(68, 68, 68);
+        font-family: "Courier New", sans-serif;
+    }:not(.cnblogs_code):not(.cnblogs_Highlighter)>pre:not([highlighted]) code:not(.hljs) {
+            background: rgb(245, 245, 245) !important;
+            border-color: transparent !important;
+        }</style><link rel="stylesheet" href="维特比算法（Viterbi）及python实现样例%20-%20我们都是大好青年%20-%20博客园_files/blog-common.min.css">
+    <link id="MainCss" rel="stylesheet" href="维特比算法（Viterbi）及python实现样例%20-%20我们都是大好青年%20-%20博客园_files/bundle-mountainink.min.css">
+    <link id="highlighter-theme-cnblogs" type="text/css" rel="stylesheet" href="维特比算法（Viterbi）及python实现样例%20-%20我们都是大好青年%20-%20博客园_files/cnblogs.css">
+    
+    <link id="mobile-style" media="only screen and (max-width: 767px)" type="text/css" rel="stylesheet" href="维特比算法（Viterbi）及python实现样例%20-%20我们都是大好青年%20-%20博客园_files/bundle-mountainink-mobile.min.css">
+    
+    <link type="application/rss+xml" rel="alternate" href="https://www.cnblogs.com/zhibei/rss">
+    <link type="application/rsd+xml" rel="EditURI" href="https://www.cnblogs.com/zhibei/rsd.xml">
+    <link type="application/wlwmanifest+xml" rel="wlwmanifest" href="https://www.cnblogs.com/zhibei/wlwmanifest.xml">
+    <script type="text/javascript" async="" src="维特比算法（Viterbi）及python实现样例%20-%20我们都是大好青年%20-%20博客园_files/analytics.js.下载"></script><script type="text/javascript" src="维特比算法（Viterbi）及python实现样例%20-%20我们都是大好青年%20-%20博客园_files/encoder.js.下载"></script><script>
+        var currentBlogId = 433441;
+        var currentBlogApp = 'zhibei';
+        var cb_enable_mathjax = false;
+        var isLogined = false;
+        var isBlogOwner = false;
+        var skinName = 'MountainInk';
+        var visitorUserId = '';
+        var hasCustomScript = false;
+        try {
+            if (hasCustomScript && document.referrer && document.referrer.indexOf('baidu.com') >= 0) {
+                Object.defineProperty(document, 'referrer', { value: '' });
+                Object.defineProperty(Document.prototype, 'referrer', { get: function(){ return ''; } });
+            }
+        } catch(error) { }
+        window.codeHighlightEngine = 1;
+        window.enableCodeLineNumber = false;
+        window.codeHighlightTheme = 'cnblogs';
+    </script>
+        <script>
+            var currentPostDateAdded = '2018-07-30 15:54';
+        </script>
+    <script src="维特比算法（Viterbi）及python实现样例%20-%20我们都是大好青年%20-%20博客园_files/jquery-2.2.0.min.js.下载"></script>
+    <script src="维特比算法（Viterbi）及python实现样例%20-%20我们都是大好青年%20-%20博客园_files/blog-common.min.js.下载"></script><style type="text/css">.medium-zoom-overlay{position:fixed;top:0;right:0;bottom:0;left:0;opacity:0;transition:opacity .3s;will-change:opacity}  .medium-zoom--opened .medium-zoom-overlay{cursor:pointer;cursor:zoom-out;opacity:1}  .medium-zoom-image{cursor:pointer;cursor:zoom-in;transition:transform .3s cubic-bezier(.2,0,.2,1)!important}  .medium-zoom-image--hidden{visibility:hidden}  .medium-zoom-image--opened{position:relative;cursor:pointer;cursor:zoom-out;will-change:transform}</style><script id="hljs-script" async="" data-loaded="true" src="维特比算法（Viterbi）及python实现样例%20-%20我们都是大好青年%20-%20博客园_files/highlight.min.js.下载"></script>
+    
+    
+    
+<meta http-equiv="origin-trial" content="AxujKG9INjsZ8/gUq8+dTruNvk7RjZQ1oFhhgQbcTJKDnZfbzSTE81wvC2Hzaf3TW4avA76LTZEMdiedF1vIbA4AAABueyJvcmlnaW4iOiJodHRwczovL2ltYXNkay5nb29nbGVhcGlzLmNvbTo0NDMiLCJmZWF0dXJlIjoiVHJ1c3RUb2tlbnMiLCJleHBpcnkiOjE2NTI3NzQ0MDAsImlzVGhpcmRQYXJ0eSI6dHJ1ZX0="><meta http-equiv="origin-trial" content="Azuce85ORtSnWe1MZDTv68qpaW3iHyfL9YbLRy0cwcCZwVnePnOmkUJlG8HGikmOwhZU22dElCcfrfX2HhrBPAkAAAB7eyJvcmlnaW4iOiJodHRwczovL2RvdWJsZWNsaWNrLm5ldDo0NDMiLCJmZWF0dXJlIjoiVHJ1c3RUb2tlbnMiLCJleHBpcnkiOjE2NTI3NzQ0MDAsImlzU3ViZG9tYWluIjp0cnVlLCJpc1RoaXJkUGFydHkiOnRydWV9"><meta http-equiv="origin-trial" content="A16nvcdeoOAqrJcmjLRpl1I6f3McDD8EfofAYTt/P/H4/AWwB99nxiPp6kA0fXoiZav908Z8etuL16laFPUdfQsAAACBeyJvcmlnaW4iOiJodHRwczovL2dvb2dsZXRhZ3NlcnZpY2VzLmNvbTo0NDMiLCJmZWF0dXJlIjoiVHJ1c3RUb2tlbnMiLCJleHBpcnkiOjE2NTI3NzQ0MDAsImlzU3ViZG9tYWluIjp0cnVlLCJpc1RoaXJkUGFydHkiOnRydWV9"><meta http-equiv="origin-trial" content="AxBHdr0J44vFBQtZUqX9sjiqf5yWZ/OcHRcRMN3H9TH+t90V/j3ENW6C8+igBZFXMJ7G3Pr8Dd13632aLng42wgAAACBeyJvcmlnaW4iOiJodHRwczovL2dvb2dsZXN5bmRpY2F0aW9uLmNvbTo0NDMiLCJmZWF0dXJlIjoiVHJ1c3RUb2tlbnMiLCJleHBpcnkiOjE2NTI3NzQ0MDAsImlzU3ViZG9tYWluIjp0cnVlLCJpc1RoaXJkUGFydHkiOnRydWV9"><meta http-equiv="origin-trial" content="A88BWHFjcawUfKU3lIejLoryXoyjooBXLgWmGh+hNcqMK44cugvsI5YZbNarYvi3roc1fYbHA1AVbhAtuHZflgEAAAB2eyJvcmlnaW4iOiJodHRwczovL2dvb2dsZS5jb206NDQzIiwiZmVhdHVyZSI6IlRydXN0VG9rZW5zIiwiZXhwaXJ5IjoxNjUyNzc0NDAwLCJpc1N1YmRvbWFpbiI6dHJ1ZSwiaXNUaGlyZFBhcnR5Ijp0cnVlfQ=="><meta http-equiv="origin-trial" content="A8FHS1NmdCwGqD9DwOicnHHY+y27kdWfxKa0YHSGDfv0CSpDKRHTQdQmZVPDUdaFWUsxdgVxlwAd6o+dhJykPA0AAACWeyJvcmlnaW4iOiJodHRwczovL2RvdWJsZWNsaWNrLm5ldDo0NDMiLCJmZWF0dXJlIjoiQ29udmVyc2lvbk1lYXN1cmVtZW50IiwiZXhwaXJ5IjoxNjQzMTU1MTk5LCJpc1N1YmRvbWFpbiI6dHJ1ZSwiaXNUaGlyZFBhcnR5Ijp0cnVlLCJ1c2FnZSI6InN1YnNldCJ9"><meta http-equiv="origin-trial" content="A8zdXi6dr1hwXEUjQrYiyYQGlU3557y5QWDnN0Lwgj9ePt66XMEvNkVWOEOWPd7TP9sBQ25X0Q15Lr1Nn4oGFQkAAACceyJvcmlnaW4iOiJodHRwczovL2dvb2dsZXN5bmRpY2F0aW9uLmNvbTo0NDMiLCJmZWF0dXJlIjoiQ29udmVyc2lvbk1lYXN1cmVtZW50IiwiZXhwaXJ5IjoxNjQzMTU1MTk5LCJpc1N1YmRvbWFpbiI6dHJ1ZSwiaXNUaGlyZFBhcnR5Ijp0cnVlLCJ1c2FnZSI6InN1YnNldCJ9"><meta http-equiv="origin-trial" content="A4/Htern2udN9w3yJK9QgWQxQFruxOXsXL7cW60DyCl0EZFGCSme/J33Q/WzF7bBkVvhEWDlcBiUyZaim5CpFQwAAACceyJvcmlnaW4iOiJodHRwczovL2dvb2dsZXRhZ3NlcnZpY2VzLmNvbTo0NDMiLCJmZWF0dXJlIjoiQ29udmVyc2lvbk1lYXN1cmVtZW50IiwiZXhwaXJ5IjoxNjQzMTU1MTk5LCJpc1N1YmRvbWFpbiI6dHJ1ZSwiaXNUaGlyZFBhcnR5Ijp0cnVlLCJ1c2FnZSI6InN1YnNldCJ9"><script src="维特比算法（Viterbi）及python实现样例%20-%20我们都是大好青年%20-%20博客园_files/pubads_impl_2022022201.js.下载" async=""></script><link rel="preload" href="维特比算法（Viterbi）及python实现样例%20-%20我们都是大好青年%20-%20博客园_files/f.txt" as="script"><script type="text/javascript" src="维特比算法（Viterbi）及python实现样例%20-%20我们都是大好青年%20-%20博客园_files/f.txt"></script></head>
+<body class="skin-mountainink has-navbar">
+    <a name="top"></a>
+    <div id="top_nav" class="navbar forpc">
+        <nav id="nav_main" class="navbar-main">
+            <ul id="nav_left" class="navbar-list navbar-left">
+                <li class="navbar-branding">
+                    <a href="https://www.cnblogs.com/" title="开发者的网上家园">
+                            <img src="维特比算法（Viterbi）及python实现样例%20-%20我们都是大好青年%20-%20博客园_files/logo.svg" alt="博客园Logo">
+                    </a>
+                </li>
+                <li><a href="https://www.cnblogs.com/" onclick="countClicks(&#39;skin-navbar-sitehome&#39;)">首页</a></li>
+                <li><a href="https://news.cnblogs.com/" onclick="countClicks(&#39;nav&#39;, &#39;skin-navbar-news&#39;)">新闻</a></li>
+                <li><a href="https://q.cnblogs.com/" onclick="countClicks(&#39;nav&#39;, &#39;skin-navbar-q&#39;)">博问</a></li>
+                <li><a id="nav_brandzone" href="https://brands.cnblogs.com/" onclick="countClicks(&#39;nav&#39;, &#39;skin-navbar-brands&#39;)">专区</a></li>
+                <li><a href="https://ing.cnblogs.com/" onclick="countClicks(&#39;nav&#39;, &#39;skin-navbar-ing&#39;)">闪存</a></li>
+                <li><a href="https://edu.cnblogs.com/" onclick="countClicks(&#39;nav&#39;, &#39;skin-navbar-edu&#39;)">班级</a></li>
+            </ul>
+            <ul id="nav_right" class="navbar-list navbar-right">
+                <li>
+                    <form id="zzk_search" class="navbar-search" action="https://zzk.cnblogs.com/s" method="get">
+                        <input name="w" id="zzk_search_input" placeholder="代码改变世界" type="text" tabindex="3">
+                        <button type="submit" id="zzk_search_button">
+                            <img src="维特比算法（Viterbi）及python实现样例%20-%20我们都是大好青年%20-%20博客园_files/search.svg" alt="搜索">
+                        </button>
+                    </form>
+                </li>
+                <li id="navbar_login_status" class="navbar-list">
+                    <a class="navbar-user-info navbar-blog" href="https://i.cnblogs.com/EditPosts.aspx?opt=1" alt="写随笔" title="写随笔" style="display: none;">
+                        <img id="new_post_icon" class="navbar-icon" src="维特比算法（Viterbi）及python实现样例%20-%20我们都是大好青年%20-%20博客园_files/newpost.svg" alt="写随笔">
+                    </a>
+                    <a id="navblog-myblog-icon" class="navbar-user-info navbar-blog" href="https://passport.cnblogs.com/GetBlogApplyStatus.aspx" alt="我的博客" title="我的博客" style="display: none;">
+                        <img id="myblog_icon" class="navbar-icon" src="维特比算法（Viterbi）及python实现样例%20-%20我们都是大好青年%20-%20博客园_files/myblog.svg" alt="我的博客">
+                    </a>
+                    <a class="navbar-user-info navbar-message navbar-icon-wrapper" href="https://msg.cnblogs.com/" alt="短消息" title="短消息" style="display: none;">
+                        <img id="msg_icon" class="navbar-icon" src="维特比算法（Viterbi）及python实现样例%20-%20我们都是大好青年%20-%20博客园_files/message.svg" alt="短消息">
+                        <span id="msg_count" style="display: none"></span>
+                    </a>
+                    <div id="user_info" class="navbar-user-info dropdown" style="display: none;">
+                        <a class="dropdown-button" href="https://home.cnblogs.com/">
+                            <img id="user_icon" class="navbar-avatar" src="维特比算法（Viterbi）及python实现样例%20-%20我们都是大好青年%20-%20博客园_files/avatar-default.svg" alt="用户头像">
+                        </a>
+                        <div class="dropdown-menu">
+                            <a id="navblog-myblog-text" href="https://passport.cnblogs.com/GetBlogApplyStatus.aspx">我的博客</a>
+                            <a href="https://home.cnblogs.com/">我的园子</a>
+                            <a href="https://account.cnblogs.com/settings/account">账号设置</a>
+                            <a href="javascript:void(0)" id="navbar_lite_mode_toggle" title="简洁模式会使用简洁款皮肤显示所有博客">
+    简洁模式 <img id="navbar_lite_mode_on" src="维特比算法（Viterbi）及python实现样例%20-%20我们都是大好青年%20-%20博客园_files/lite-mode-check.svg" class="hide"><span id="navbar_lite_mode_spinner" class="hide">...</span>
+</a>
+                            <a href="javascript:void(0)" onclick="account.logout();">退出登录</a>
+                        </div>
+                    </div>
+                    <a class="navbar-anonymous" href="https://account.cnblogs.com/signup/" style="display: inline;">注册</a>
+                    <a class="navbar-anonymous" href="javascript:void(0);" onclick="account.login()" style="display: inline;">登录</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    
+    <!--done-->
+<div id="home">
+<div id="header">
+	<div id="blogTitle">
+        <a id="lnkBlogLogo" href="https://www.cnblogs.com/zhibei/"><img id="blogLogo" src="维特比算法（Viterbi）及python实现样例%20-%20我们都是大好青年%20-%20博客园_files/logo.gif" alt="返回主页"></a>
+		
+<!--done-->
+<h1><a id="Header1_HeaderTitle" class="headermaintitle HeaderMainTitle" href="https://www.cnblogs.com/zhibei/">我们都是大好青年</a>
+</h1>
+<h2></h2>
+
+
+
+
+		
+	</div><!--end: blogTitle 博客的标题和副标题 -->
+	<div id="navigator">
+		
+<ul id="navList">
+<li><a id="blog_nav_sitehome" class="menu" href="https://www.cnblogs.com/">
+博客园</a>
+</li>
+<li>
+<a id="blog_nav_myhome" class="menu" href="https://www.cnblogs.com/zhibei/">
+首页</a>
+</li>
+<li>
+
+<a id="blog_nav_newpost" class="menu" href="https://i.cnblogs.com/EditPosts.aspx?opt=1">
+新随笔</a>
+</li>
+<li>
+<a id="blog_nav_contact" class="menu" href="https://msg.cnblogs.com/send/%E6%88%91%E4%BB%AC%E9%83%BD%E6%98%AF%E5%A4%A7%E5%A5%BD%E9%9D%92%E5%B9%B4">
+联系</a></li>
+<li>
+<a id="blog_nav_rss" class="menu" href="javascript:void(0)" data-rss="https://www.cnblogs.com/zhibei/rss/">
+订阅</a>
+<!--<partial name="./Shared/_XmlLink.cshtml" model="Model" /></li>--></li>
+<li>
+<a id="blog_nav_admin" class="menu" href="https://i.cnblogs.com/">
+管理</a>
+</li>
+</ul>
+
+
+		<div class="blogStats">
+			<span id="stats_post_count">随笔 - 250&nbsp; </span>
+<span id="stats_article_count">文章 - 0&nbsp; </span>
+<span id="stats-comment_count">评论 - 23&nbsp; </span>
+<span id="stats-total-view-count">阅读 - 
+<span title="总阅读数: 369544">
+36万</span></span>
+
+		</div><!--end: blogStats -->
+	</div><!--end: navigator 博客导航栏 -->
+</div><!--end: header 头部 -->
+<div id="main">
+	<div id="mainContent">
+	<div class="forFlow">
+		<div id="post_detail">
+    <!--done-->
+    <div id="topics">
+        <div class="post">
+            <h1 class="postTitle">
+                
+<a id="cb_post_title_url" class="postTitle2 vertical-middle" href="https://www.cnblogs.com/zhibei/p/9391014.html">
+    <span>维特比算法（Viterbi）及python实现样例</span>
+    
+
+
+
+</a>
+
+            </h1>
+            <div class="clear"></div>
+            <div class="postBody">
+                <div id="cnblogs_post_body" class="blogpost-body blogpost-body-html">
+<p>维特比算法（Viterbi）</p>
+<p>维特比算法</p>
+<p>维特比算法shiyizhong 动态规划算法用于最可能产生观测时间序列的-维特比路径-隐含状态序列，特别是在马尔可夫信息源上下文和隐马尔科夫模型中。术语“维特比路径”和“维特比算法”也被用于寻找观察结果最有可能解释的相关dongtai 规划算法。例如在统计句法分析中动态规划可以被用于发现最有可能的上下文无关的派生的字符串，有时被称为“维特比分析”。</p>
+<p>利用动态规划寻找最短路径</p>
+<p>动态规划是运筹学的一个分支，是求解决策过程最优化的数学方法，通常情况下应用于最优化的问题，这类问题一般有很多可行的解，每个解有一个值，而我们希望从中找到最优的答案。</p>
+<p>在计算机科学领域，应用动态规划的思想解决的最基本的一个问题就是：寻找有向无环图（篱笆网络）当中两个点之间的最短路径（实际应用于地图导航、语音识别、分词、机器翻译等等）</p>
+<p>下面举一个比较简单的例子做说明：求S到E的最短路径，如下图（各点之间距离不相同）：</p>
+<p>&nbsp;<img src="维特比算法（Viterbi）及python实现样例%20-%20我们都是大好青年%20-%20博客园_files/1403672-20180730155246514-851879645.png" alt="" class="medium-zoom-image"></p>
+<p>&nbsp;</p>
+<p>我们知道，要找到S到E之间最短路径，最容易想到的方法就是穷举法。也就是把所有可能的路径都例举出来。从S走向A层共有4种走法，从A层走向B层又有4种走法，从B层走向C层又有4种走法，然后C层走向E点只有一种选择。所以最终我们穷举出了4*4*4=64种可能。显然，这种方法必定可行，但在实际的应用当中，对于数量及其庞大的节点数和边数的图，其计算复杂度也将会变得非常大，而计算效率也会随之降低。</p>
+<p>&nbsp;<img src="维特比算法（Viterbi）及python实现样例%20-%20我们都是大好青年%20-%20博客园_files/1403672-20180730155254658-1143993492.png" alt=""></p>
+<p>&nbsp;</p>
+<p>因此，这里选择适用一种基于动态规划的方式来寻找最佳路径。</p>
+<p>所谓动态规划。其核心就是“动态”的概念，把大的问题细分为多个小的问题，基于每一步的结果再去寻找下一步的策略，通过每一步走过之后的局部最优去寻找全局最优，这样解释比较抽象，下面直接用回刚刚的例子说明。如下图：</p>
+<p>&nbsp;<img src="维特比算法（Viterbi）及python实现样例%20-%20我们都是大好青年%20-%20博客园_files/1403672-20180730155302596-997188190.png" alt="" class="medium-zoom-image"></p>
+<p>&nbsp;</p>
+<p>首先，我们假设S到E之间存在一条最短路径（红色），且这条路径经过C2点，那么我们便一定能够确定从S到C2的64条（4*4*4=64）子路经当中，该子路经一定最短。（证明：反证法。如果S到C2之间存在一条更短的子路经，那么便可以用它来替代原先的路径，而原来的路径显然就不是最短了，这与原假设自相矛盾）。</p>
+<p>同理，我们也可以得出从S到B2点为两点间最短子路经的结论。这时候，真相便慢慢浮出水面：既然如此，我们计算从S点出发到点C2的最短路径，是不是只要考虑从S出发到B层所有节点的最短路径就可以了？答案是肯定的！因为，从S到E的“全局最短”路径必定经过这些“局部最短”子路经。没错！这就是上面提及到的通过局部最优的最优去寻找全局最优，问题的规模被不断缩小！</p>
+<p>接下来，要揭晓答案了！继续看下图：</p>
+<p>&nbsp;<img src="维特比算法（Viterbi）及python实现样例%20-%20我们都是大好青年%20-%20博客园_files/1403672-20180730155311559-1011495463.png" alt="" class="medium-zoom-image"></p>
+<p>&nbsp;</p>
+<p>回顾之前的分析：我们计算从S到C2点的最短路径时候只需要考虑从S出发到B层所有节点的最短路径，B层也是。对B2来说，一共有4条路线可达，分别是A1-&gt;B2,A2-&gt;B2,A3-&gt;B2, A4-&gt;B2。我们需要做的就是A2-&gt;B2这条路线保留，而其他3条删掉（因为根据以上的分析，他们不可能构成全程的最短路线）。Ok，来到这里，我们会发现一个和小“漏洞”，这段S-&gt;A2-&gt;B2-&gt;C2-&gt;E的路线只是我一厢情愿的假设，最短路径下不一定是经过以上这些点。所以，我们要把每层的每个节点都考虑进来。</p>
+<p>以下是具体做法：</p>
+<p><strong>step1</strong>：从点S出发。对于第一层的4个节点，算出他们的距离d(S,A1),d(S,A2),d(S,A3),d(S,A4),因为只有一步，所以这些距离都是S到它们各自的最短距离</p>
+<p><strong>step2</strong>:对于B层的所有节点(B1,B2,B3,B4),要计算出S到他们的最短距离。我们知道，对于特定的节点B2，从S到它的路径可以经过A层的任何一个节点(A1,A2,A3,A4)。对应的路径长就是d(S,B2)=d(S,Ai)+d(Ai,B2)（其中i=1，2，3，4）。由于A层有4个节点（即i有4个取值），我们要一一计算，然后找到最小值。这样，对于B层的每个节点，都需要进行4次运算，而B层有4个节点，所以共有4*4=16次运算。</p>
+<p><strong>step3:</strong>这一步是该算法的核心。我们从step2计算得出的阶段结果只保留4个最短路径值（每个节点保留一个）。那么，若从B层走向C层来说，该步骤的级数已经不再是4*4，而是变成4！也就是说，从B层到C层的最短路径只需要基于B层得出的4个结果来计算。这种方法一直持续到最后一个状态，每一步计算的复杂度为相邻两层的计算复杂度为4*4乘积的正比！再通俗点说，连接着两两相邻层的计算符合变成了“+”号，取代了原先的“*”号。用这种方法，只需要进行4*4*2=32次计算！</p>
+<p>其实上述的算法就是著名的维特比算法，事实上非常简单！</p>
+<p>若假设整个网格的宽度为D，网格长度为N，那么弱适用穷举法整个最短路径的算法复杂度为O(D^N),而适用这种算法的计算复杂度为O（ND^2）.试想一下，弱D与N都非常大，适用维特比算法的效率将会提高几个数量级！</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>尝试用高中知识去理解一下Veterbi算法</p>
+<p>1、&nbsp; 题目背景</p>
+<p>从前有个村儿，村里的人身体情况只有两种可能：健康或者发烧</p>
+<p>假设这个村儿的人没有体温计或者百度这种神奇的东西，它唯一判断身体情况的途径是到村头小诊所询问</p>
+<p>月儿通过询问村民的感觉，判断他的病情，再假设村民只会回答正常、头晕或冷</p>
+<p>有一天村里的澳巴卢就去月儿那询问了</p>
+<p>第一天他告诉月儿他感觉正常</p>
+<p>第二天他告诉月儿他有点冷</p>
+<p>第三天他告诉月儿感觉有点头晕</p>
+<p>那么问题来了，月儿如何根据阿鲁的描述情况，推断出这三天中阿鲁的一个身体状态呢？</p>
+<p>为此月儿上百度搜google，一番狂搜，发现维特比算法正好能解决这个问题，月儿乐了</p>
+<p>2、&nbsp; 已知情况</p>
+<p>隐含的身体状况={健康，发烧}</p>
+<p>可观察的感觉状态={正常、冷、头晕}</p>
+<p>月儿预判的阿鲁的身体状态的概率分布={健康：0.6，发烧：0.4}</p>
+<p>月儿认为的阿鲁的身体健康的转换概率分布={</p>
+<p>健康-&gt;健康：0.7</p>
+<p>健康-&gt;发烧：0.3</p>
+<p>发烧-&gt;健康：0.4</p>
+<p>发烧-&gt;发烧：0.6</p>
+<p>}</p>
+<p>月儿认为的在相应的健康状况条件下，阿鲁的感觉的概率分布={</p>
+<p>健康，正常：0.5，冷：0.4，头晕：0.1；</p>
+<p>发烧，正常：0.1，冷：0.3，头晕：0.6</p>
+<p>}</p>
+<p>阿鲁连续三天的身体感觉依次是：正常、冷、头晕。</p>
+<p>3、&nbsp; 已知上述，求：阿鲁这三天的身体健康状态变换的过程是怎么样的？</p>
+<p>4、&nbsp; 过程：</p>
+<p>根据Viterbi理论，后一天的状态会依赖前一天的状态和当前的可能观察的状态。那么只要根据第一天的正常状态依次推算找出到达第三天头晕状态的最大概率，就可以知道这三天的身体变换情况。</p>
+<p>1.初始情况：</p>
+<p>P(健康) = 0.6，P(发烧)=0.4。</p>
+<p>2.求第一天的身体情况：</p>
+<p>计算在阿驴感觉正常的情况下最可能的身体状态。</p>
+<p>&nbsp;</p>
+<p>P(今天健康) = P(正常|健康)*P(健康|初始情况) = 0.5 * 0.6 = 0.3</p>
+<p>P(今天发烧) = P(正常|发烧)*P(发烧|初始情况) = 0.1 * 0.4 = 0.04</p>
+<p>那么就可以认为第一天最可能的身体状态是：健康。</p>
+<p>3.求第二天的身体状况：</p>
+<p>计算在阿驴感觉冷的情况下最可能的身体状态。</p>
+<p>那么第二天有四种情况，由于第一天的发烧或者健康转换到第二天的发烧或者健康。</p>
+<p>&nbsp;</p>
+<p>P(前一天发烧，今天发烧) = P(前一天发烧)*P(发烧-&gt;发烧)*P(冷|发烧) = 0.04 * 0.6 * 0.3 = 0.0072</p>
+<p>P(前一天发烧，今天健康) = P(前一天发烧)*P(发烧-&gt;健康)*P(冷|健康) = 0.04 * 0.4 * 0.4 = 0.0064</p>
+<p>P(前一天健康，今天健康) = P(前一天健康)*P(健康-&gt;健康)*P(冷|健康) = 0.3 * 0.7 * 0.4 = 0.084</p>
+<p>P(前一天健康，今天发烧) = P(前一天健康)*P(健康-&gt;发烧)*P(冷|发烧) = 0.3 * 0.3 *.03 = 0.027</p>
+<p>那么可以认为，第二天最可能的状态是：健康。</p>
+<p>4.求第三天的身体状态：</p>
+<p>计算在阿驴感觉头晕的情况下最可能的身体状态。</p>
+<p>&nbsp;</p>
+<p>P(前一天发烧，今天发烧) = P(前一天发烧)*P(发烧-&gt;发烧)*P(头晕|发烧) = 0.027 * 0.6 * 0.6 = 0.00972</p>
+<p>P(前一天发烧，今天健康) = P(前一天发烧)*P(发烧-&gt;健康)*P(头晕|健康) = 0.027 * 0.4 * 0.1 = 0.00108</p>
+<p>P(前一天健康，今天健康) = P(前一天健康)*P(健康-&gt;健康)*P(头晕|健康) = 0.084 * 0.7 * 0.1 = 0.00588</p>
+<p>P(前一天健康，今天发烧) = P(前一天健康)*P(健康-&gt;发烧)*P(头晕|发烧) = 0.084 * 0.3 *0.6 = 0.01512</p>
+<p>那么可以认为：第三天最可能的状态是发烧。</p>
+<p>5.结论</p>
+<p>&nbsp;</p>
+<p>根据如上计算。这样月儿断定，阿驴这三天身体变化的序列是：健康-&gt;健康-&gt;发烧。</p>
+<p>这个算法大概就是通过已知的可以观察到的序列，和一些已知的状态转换之间的概率情况，通过综合状态之间的转移概率和前一个状态的情况计算出概率最大的状态转换路径，从而推断出隐含状态的序列的情况。</p>
+<div class="cnblogs_code"><div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="维特比算法（Viterbi）及python实现样例%20-%20我们都是大好青年%20-%20博客园_files/copycode.gif" alt="复制代码"></a></span></div>
+<pre><span style="color: rgba(0, 128, 128, 1)"> 1</span> <span style="color: rgba(0, 0, 255, 1)">import</span><span style="color: rgba(0, 0, 0, 1)"> numpy as np
+</span><span style="color: rgba(0, 128, 128, 1)"> 2</span> <span style="color: rgba(0, 0, 255, 1)">def</span><span style="color: rgba(0, 0, 0, 1)"> viterbi(trainsition_probability,emission_probability,pi,obs_seq):
+</span><span style="color: rgba(0, 128, 128, 1)"> 3</span>     <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)">转换为矩阵进行运算</span>
+<span style="color: rgba(0, 128, 128, 1)"> 4</span>     trainsition_probability=<span style="color: rgba(0, 0, 0, 1)">np.array(trainsition_probability)
+</span><span style="color: rgba(0, 128, 128, 1)"> 5</span>     emission_probability=<span style="color: rgba(0, 0, 0, 1)">np.array(emission_probability)
+</span><span style="color: rgba(0, 128, 128, 1)"> 6</span>     pi=<span style="color: rgba(0, 0, 0, 1)">np.array(pi)
+</span><span style="color: rgba(0, 128, 128, 1)"> 7</span>     obs_seq = [0, 2, 3<span style="color: rgba(0, 0, 0, 1)">]
+</span><span style="color: rgba(0, 128, 128, 1)"> 8</span>     <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)"> 最后返回一个Row*Col的矩阵结果</span>
+<span style="color: rgba(0, 128, 128, 1)"> 9</span>     Row =<span style="color: rgba(0, 0, 0, 1)"> np.array(trainsition_probability).shape[0]
+</span><span style="color: rgba(0, 128, 128, 1)">10</span>     Col =<span style="color: rgba(0, 0, 0, 1)"> len(obs_seq)
+</span><span style="color: rgba(0, 128, 128, 1)">11</span>     <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)">定义要返回的矩阵</span>
+<span style="color: rgba(0, 128, 128, 1)">12</span>     F=<span style="color: rgba(0, 0, 0, 1)">np.zeros((Row,Col))
+</span><span style="color: rgba(0, 128, 128, 1)">13</span>     <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)">初始状态</span>
+<span style="color: rgba(0, 128, 128, 1)">14</span>     F[:,0]=pi*<span style="color: rgba(0, 0, 0, 1)">np.transpose(emission_probability[:,obs_seq[0]])
+</span><span style="color: rgba(0, 128, 128, 1)">15</span>     <span style="color: rgba(0, 0, 255, 1)">for</span> t <span style="color: rgba(0, 0, 255, 1)">in</span> range(1<span style="color: rgba(0, 0, 0, 1)">,Col):
+</span><span style="color: rgba(0, 128, 128, 1)">16</span>         list_max=<span style="color: rgba(0, 0, 0, 1)">[]
+</span><span style="color: rgba(0, 128, 128, 1)">17</span>         <span style="color: rgba(0, 0, 255, 1)">for</span> n <span style="color: rgba(0, 0, 255, 1)">in</span><span style="color: rgba(0, 0, 0, 1)"> range(Row):
+</span><span style="color: rgba(0, 128, 128, 1)">18</span>             list_x=list(np.array(F[:,t-1])*<span style="color: rgba(0, 0, 0, 1)">np.transpose(trainsition_probability[:,n]))
+</span><span style="color: rgba(0, 128, 128, 1)">19</span>             <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)">获取最大概率</span>
+<span style="color: rgba(0, 128, 128, 1)">20</span>             list_p=<span style="color: rgba(0, 0, 0, 1)">[]
+</span><span style="color: rgba(0, 128, 128, 1)">21</span>             <span style="color: rgba(0, 0, 255, 1)">for</span> i <span style="color: rgba(0, 0, 255, 1)">in</span><span style="color: rgba(0, 0, 0, 1)"> list_x:
+</span><span style="color: rgba(0, 128, 128, 1)">22</span>                 list_p.append(i*10000<span style="color: rgba(0, 0, 0, 1)">)
+</span><span style="color: rgba(0, 128, 128, 1)">23</span>             list_max.append(max(list_p)/10000<span style="color: rgba(0, 0, 0, 1)">)
+</span><span style="color: rgba(0, 128, 128, 1)">24</span>         F[:,t]=np.array(list_max)*<span style="color: rgba(0, 0, 0, 1)">np.transpose(emission_probability[:,obs_seq[t]])
+</span><span style="color: rgba(0, 128, 128, 1)">25</span>     <span style="color: rgba(0, 0, 255, 1)">return</span><span style="color: rgba(0, 0, 0, 1)"> F
+</span><span style="color: rgba(0, 128, 128, 1)">26</span> 
+<span style="color: rgba(0, 128, 128, 1)">27</span> <span style="color: rgba(0, 0, 255, 1)">if</span> <span style="color: rgba(128, 0, 128, 1)">__name__</span>==<span style="color: rgba(128, 0, 0, 1)">'</span><span style="color: rgba(128, 0, 0, 1)">__main__</span><span style="color: rgba(128, 0, 0, 1)">'</span><span style="color: rgba(0, 0, 0, 1)">:
+</span><span style="color: rgba(0, 128, 128, 1)">28</span>     <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)">隐藏状态</span>
+<span style="color: rgba(0, 128, 128, 1)">29</span>     invisible=[<span style="color: rgba(128, 0, 0, 1)">'</span><span style="color: rgba(128, 0, 0, 1)">Sunny</span><span style="color: rgba(128, 0, 0, 1)">'</span>,<span style="color: rgba(128, 0, 0, 1)">'</span><span style="color: rgba(128, 0, 0, 1)">Cloud</span><span style="color: rgba(128, 0, 0, 1)">'</span>,<span style="color: rgba(128, 0, 0, 1)">'</span><span style="color: rgba(128, 0, 0, 1)">Rainy</span><span style="color: rgba(128, 0, 0, 1)">'</span><span style="color: rgba(0, 0, 0, 1)">]
+</span><span style="color: rgba(0, 128, 128, 1)">30</span>     <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)">初始状态</span>
+<span style="color: rgba(0, 128, 128, 1)">31</span>     pi=[0.63,0.17,0.20<span style="color: rgba(0, 0, 0, 1)">]
+</span><span style="color: rgba(0, 128, 128, 1)">32</span>     <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)">转移矩阵</span>
+<span style="color: rgba(0, 128, 128, 1)">33</span>     trainsion_probility=[[0.5,0.375,0.125],[0.25,0.125,0.625],[0.25,0.375,0.375<span style="color: rgba(0, 0, 0, 1)">]]
+</span><span style="color: rgba(0, 128, 128, 1)">34</span>     <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)">发射矩阵</span>
+<span style="color: rgba(0, 128, 128, 1)">35</span>     emission_probility=[[0.6,0.2,0.15,0.05],[0.25,0.25,0.25,0.25],[0.05,0.10,0.35,0.5<span style="color: rgba(0, 0, 0, 1)">]]
+</span><span style="color: rgba(0, 128, 128, 1)">36</span>     <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)">最后显示状态</span>
+<span style="color: rgba(0, 128, 128, 1)">37</span>     obs_seq=[0,2,3<span style="color: rgba(0, 0, 0, 1)">]
+</span><span style="color: rgba(0, 128, 128, 1)">38</span>     <span style="color: rgba(0, 128, 0, 1)">#</span><span style="color: rgba(0, 128, 0, 1)">最后返回一个Row*Col的矩阵结果</span>
+<span style="color: rgba(0, 128, 128, 1)">39</span>     F=<span style="color: rgba(0, 0, 0, 1)">viterbi(trainsion_probility,emission_probility,pi,obs_seq)
+</span><span style="color: rgba(0, 128, 128, 1)">40</span>     <span style="color: rgba(0, 0, 255, 1)">print</span>(F)</pre>
+<div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="维特比算法（Viterbi）及python实现样例%20-%20我们都是大好青年%20-%20博客园_files/copycode.gif" alt="复制代码"></a></span></div></div>
+<p>结果：</p>
+<p>[[ 0.378　　&nbsp; &nbsp;0.02835　　&nbsp; &nbsp; &nbsp; 0.00070875]<br>[ 0.0425 　　 0.0354375 　　 0.00265781]<br>[ 0.01 　　&nbsp; &nbsp; &nbsp;0.0165375 　　 0.01107422]]</p>
+<p>每列代表Dry,Damp,Soggy的概率，每行代表Sunny,Cloud,Rainy，所以可以看出最大概率的天气为｛Sunny，Cloud，Rainy｝</p>
+</div>
+<div class="clear"></div>
+<div id="blog_post_info_block"><div id="BlogPostCategory">
+    分类: 
+            <a href="https://www.cnblogs.com/zhibei/category/1220851.html" target="_blank">数据挖掘</a></div>
+
+
+    <div id="blog_post_info">
+<div id="green_channel">
+        <a href="javascript:void(0);" id="green_channel_digg" onclick="DiggIt(9391014,cb_blogId,1);green_channel_success(this,&#39;谢谢推荐！&#39;);">好文要顶</a>
+        <a id="green_channel_follow" onclick="follow(&#39;1d470c1a-b32f-4e37-6a5d-08d5bc00fca4&#39;);" href="javascript:void(0);">关注我</a>
+    <a id="green_channel_favorite" onclick="AddToWz(cb_entryId);return false;" href="javascript:void(0);">收藏该文</a>
+    <a id="green_channel_weibo" href="javascript:void(0);" title="分享至新浪微博" onclick="ShareToTsina()"><img src="维特比算法（Viterbi）及python实现样例%20-%20我们都是大好青年%20-%20博客园_files/icon_weibo_24.png" alt=""></a>
+    <a id="green_channel_wechat" href="javascript:void(0);" title="分享至微信" onclick="shareOnWechat()"><img src="维特比算法（Viterbi）及python实现样例%20-%20我们都是大好青年%20-%20博客园_files/wechat.png" alt=""></a>
+</div>
+<div id="author_profile">
+    <div id="author_profile_info" class="author_profile_info">
+            <a href="https://home.cnblogs.com/u/zhibei/" target="_blank"><img src="维特比算法（Viterbi）及python实现样例%20-%20我们都是大好青年%20-%20博客园_files/20180526114412.png" class="author_avatar" alt=""></a>
+        <div id="author_profile_detail" class="author_profile_info">
+            <a href="https://home.cnblogs.com/u/zhibei/">我们都是大好青年</a><br>
+            <a href="https://home.cnblogs.com/u/zhibei/followees/">关注 - 10</a><br>
+            <a href="https://home.cnblogs.com/u/zhibei/followers/">粉丝 - 42</a>
+        </div>
+    </div>
+    <div class="clear"></div>
+    <div id="author_profile_honor"></div>
+    <div id="author_profile_follow">
+                <a href="javascript:void(0);" onclick="follow(&#39;1d470c1a-b32f-4e37-6a5d-08d5bc00fca4&#39;);return false;">+加关注</a>
+    </div>
+</div>
+<div id="div_digg">
+    <div class="diggit" onclick="votePost(9391014,&#39;Digg&#39;)">
+        <span class="diggnum" id="digg_count">1</span>
+    </div>
+    <div class="buryit" onclick="votePost(9391014,&#39;Bury&#39;)">
+        <span class="burynum" id="bury_count">0</span>
+    </div>
+    <div class="clear"></div>
+    <div class="diggword" id="digg_tips">
+    </div>
+</div>
+
+<script type="text/javascript">
+    currentDiggType = 0;
+</script></div>
+    <div class="clear"></div>
+    <div id="post_next_prev">
+
+    <a href="https://www.cnblogs.com/zhibei/p/9389925.html" class="p_n_p_prefix">« </a> 上一篇：    <a href="https://www.cnblogs.com/zhibei/p/9389925.html" title="发布于 2018-07-30 12:15">Adam优化算法</a>
+    <br>
+    <a href="https://www.cnblogs.com/zhibei/p/9394758.html" class="p_n_p_prefix">» </a> 下一篇：    <a href="https://www.cnblogs.com/zhibei/p/9394758.html" title="发布于 2018-07-31 11:04">朴素贝叶斯常见面试题</a>
+
+</div>
+</div>
+            </div>
+            <div class="postDesc">posted @ 
+<span id="post-date">2018-07-30 15:54</span>&nbsp;
+<a href="https://www.cnblogs.com/zhibei/">我们都是大好青年</a>&nbsp;
+阅读(<span id="post_view_count">18658</span>)&nbsp;
+评论(<span id="post_comment_count">4</span>)&nbsp;
+<a href="https://i.cnblogs.com/EditPosts.aspx?postid=9391014" rel="nofollow">编辑</a>&nbsp;
+<a href="javascript:void(0)" onclick="AddToWz(9391014);return false;">收藏</a>&nbsp;
+<a href="javascript:void(0)" onclick="reportManager.report({ currentUserId: &#39;&#39;, targetType: &#39;blogPost&#39;, targetId: &#39;9391014&#39;, targetLink: &#39;https://www.cnblogs.com/zhibei/p/9391014.html&#39;, title: &#39;维特比算法（Viterbi）及python实现样例&#39; })">举报</a></div>
+        </div>
+	    
+	    
+    </div><!--end: topics 文章、评论容器-->
+</div>
+
+<script>
+    markdown_highlight()
+    var allowComments = true, cb_blogId = 433441, cb_blogApp = 'zhibei', cb_blogUserGuid = '1d470c1a-b32f-4e37-6a5d-08d5bc00fca4';
+    var cb_entryId = 9391014, cb_entryCreatedDate = '2018-07-30 15:54', cb_postType = 1;
+    updatePostStats(
+        [cb_entryId],
+        function(id, count) { $("#post_view_count").text(count) },
+        function(id, count) { $("#post_comment_count").text(count) })
+    zoomManager.apply("#cnblogs_post_body img:not(.code_img_closed):not(.code_img_opened)");
+</script>
+<a id="!comments"></a>
+<div id="blog-comments-placeholder"></div>
+<div id="comment_form" class="commentform">
+    <a name="commentform"></a>
+    <div id="divCommentShow"></div>
+    <div id="comment_nav"><span id="span_refresh_tips"></span><a href="javascript:void(0);" onclick="return RefreshCommentList();" id="lnk_RefreshComments" runat="server" clientidmode="Static">刷新评论</a><a href="https://www.cnblogs.com/zhibei/p/9391014.html#" onclick="return RefreshPage();">刷新页面</a><a href="https://www.cnblogs.com/zhibei/p/9391014.html#top">返回顶部</a></div>
+    <div id="comment_form_container" style="visibility: visible;"><div class="login_tips">
+    登录后才能查看或发表评论，立即 <a rel="nofollow" href="javascript:void(0);" class="underline" onclick="return account.login(&#39;!comments&#39;);">登录</a> 或者
+    <a href="https://www.cnblogs.com/">逛逛</a> 博客园首页
+</div>
+</div>
+    <div class="ad_text_commentbox" id="ad_text_under_commentbox"></div>
+    <div id="cnblogs_ch"><a href="https://developer.huawei.com/consumer/cn/forum/topic/0203803004869640020?fid=23&amp;ha_source=bokeyuan" target="_blank" onclick="gtag(&#39;event&#39;, &#39;click&#39;, {&#39;event_category&#39;: &#39;ad&#39;, &#39;event_label&#39;: &#39;T2-换为专区-新年盲盒&#39;})">【推荐】华为有奖活动：新年盲盒等你取，开发者认证有“福”礼</a><br><a href="https://cloud.baidu.com/campaign/2022developer/index.html?track=a3bf76b1cfd5f7267f7e29bd69523019a0fc7b905e4d4cf9#cloud" target="_blank" onclick="gtag(&#39;event&#39;, &#39;click&#39;, {&#39;event_category&#39;: &#39;ad&#39;, &#39;event_label&#39;: &#39;T2-百度智能云-开年见礼&#39;})">【推荐】百度智能云 2022 开年见礼，开发者上云优惠专场在等你</a><br><a href="https://brands.cnblogs.com/huawei" target="_blank" onclick="gtag(&#39;event&#39;, &#39;click&#39;, {&#39;event_category&#39;: &#39;ad&#39;, &#39;event_label&#39;: &#39;T2-华为专区&#39;})">【推荐】华为开发者专区，与开发者一起构建万物互联的智能世界</a><br></div>
+    <div id="opt_under_post"></div>
+    <div id="cnblogs_c1" class="under-post-card">
+            <div id="div-gpt-ad-1592365906576-0" style="width: 300px; height: 250px;" data-google-query-id="CJ-b0sjZnvYCFRcNXAod4xIO2g"><div id="google_ads_iframe_/1090369/C1_0__container__" style="border: 0pt none;"><iframe id="google_ads_iframe_/1090369/C1_0" title="3rd party ad content" name="google_ads_iframe_/1090369/C1_0" width="300" height="250" scrolling="no" marginwidth="0" marginheight="0" frameborder="0" role="region" aria-label="Advertisement" tabindex="0" data-google-container-id="1" style="border: 0px; vertical-align: bottom;" data-load-complete="true" src="维特比算法（Viterbi）及python实现样例%20-%20我们都是大好青年%20-%20博客园_files/saved_resource.html"></iframe></div></div>
+    </div>
+    <div id="under_post_card1"><div class="under-post-card">
+<b>编辑推荐：</b>
+<br>
+
+· <a href="https://www.cnblogs.com/CKExp/p/15938916.html" target="_blank">理解 OAuth2.0 协议和授权机制 </a>
+    <br>
+· <a href="https://www.cnblogs.com/xiaxiaolu/p/15929063.html" target="_blank">Asp.net core IdentityServer4 与传统基于角色的权限系统的集成</a>
+    <br>
+· <a href="https://www.cnblogs.com/huangxincheng/p/15928029.html" target="_blank">记一次 .NET 某供应链WEB网站 CPU 爆高事故分析</a>
+    <br>
+· <a href="https://www.cnblogs.com/1wen/p/15921343.html" target="_blank">从 Mongo 到 ClickHouse 我到底经历了什么？ </a>
+    <br>
+· <a href="https://www.cnblogs.com/dragonir/p/15921635.html" target="_blank">使用 Three.js 让二维图片具有3D效果</a>
+    <br>
+</div></div>
+        <div id="cnblogs_c2" class="under-post-card">
+            <a href="https://cloud.baidu.com/campaign/2022developer/index.html?track=a3bf76b1cfd5f7267f7e29bd6952301957009407f6071b35#cloud" rel="nofollow" target="_blank" onclick="countCreativeClicks(&#39;C2-百度智能云-开年见礼&#39;)">
+                <img src="维特比算法（Viterbi）及python实现样例%20-%20我们都是大好青年%20-%20博客园_files/35695-20220217225133187-1009259458.jpg" alt="" onload="countCreativeImpressions(&#39;C2-百度智能云-开年见礼&#39;)">
+            </a>
+        </div>
+    <div id="under_post_card2"><div class="itnews under-post-card">
+    <b>最新新闻</b>：
+    <br>
+ ·          <a href="https://news.cnblogs.com/n/714605/" target="_blank">小电科技否认裁员：业务形态升级 正常组织以及人员结构调整</a>
+        <br>
+ ·          <a href="https://news.cnblogs.com/n/714604/" target="_blank">我问了同事一个问题，他说「请你别做伸手党」</a>
+        <br>
+ ·          <a href="https://news.cnblogs.com/n/714603/" target="_blank">「中国加班第一楼」深圳科兴万人大撤离！拖主机带屏幕，程序员公交上写代码</a>
+        <br>
+ ·          <a href="https://news.cnblogs.com/n/714602/" target="_blank">Python迎来新挑战：LeCun站台的Skip语言有机会成为深度学习语言吗？</a>
+        <br>
+ ·          <a href="https://news.cnblogs.com/n/714601/" target="_blank">中科院德州扑克AI获卓越论文奖！AAAI 2022开奖，吴恩达获纪念讲座奖</a>
+        <br>
+    » <a href="https://news.cnblogs.com/" title="IT 新闻" target="_blank">更多新闻...</a>
+</div></div>
+    <div id="HistoryToday" class="under-post-card"></div>
+    <script type="text/javascript">
+        var commentManager = new blogCommentManager();
+        commentManager.renderComments(0);
+        fixPostBody();
+
+                window.tocManager.displayDisableTocTips = false;
+                window.tocManager.generateToc();
+            setTimeout(function() { incrementViewCount(cb_entryId); }, 50);        deliverT2();
+        deliverC1C2();
+        loadNewsAndKb();
+LoadPostCategoriesTags(cb_blogId, cb_entryId);        LoadPostInfoBlock(cb_blogId, cb_entryId, cb_blogApp, cb_blogUserGuid);
+        GetPrevNextPost(cb_entryId, cb_blogId, cb_entryCreatedDate, cb_postType);
+        loadOptUnderPost();
+        GetHistoryToday(cb_blogId, cb_blogApp, cb_entryCreatedDate);
+    </script>
+</div>
+
+	</div><!--end: forFlow -->
+	</div><!--end: mainContent 主体内容容器-->
+	<div id="sideBar">
+		<div id="sideBarMain">
+			<div id="sidebar_news" class="newsItem"><!--done-->
+<h3 class="catListTitle">公告</h3>
+
+<div id="blog-news">
+    
+    <div id="profile_block">
+        昵称：
+        <a href="https://home.cnblogs.com/u/zhibei/">
+            我们都是大好青年
+        </a>
+        <br>
+        园龄：
+        <a href="https://home.cnblogs.com/u/zhibei/" title="入园时间：2018-05-18">
+            3年9个月
+        </a>
+        <br>
+        粉丝：
+        <a href="https://home.cnblogs.com/u/zhibei/followers/">
+            42
+        </a>
+        <br>
+        关注：
+        <a href="https://home.cnblogs.com/u/zhibei/followees/">
+            10
+        </a>
+        <div id="p_b_follow">
+<a href="javascript:void(0)" onclick="follow(&#39;1d470c1a-b32f-4e37-6a5d-08d5bc00fca4&#39;)">+加关注</a></div>
+        <script>getFollowStatus('1d470c1a-b32f-4e37-6a5d-08d5bc00fca4');</script>
+    </div>
+</div>
+
+</div>
+<div id="sidebar_c3"></div>
+			<div id="blog-calendar" style="">
+
+<table id="blogCalendar" class="Cal" cellspacing="0" cellpadding="0" title="Calendar" border="0">
+    <tbody>
+        <tr>
+            <td colspan="7">
+                <table class="CalTitle" cellspacing="0" border="0">
+                    <tbody>
+                        <tr>
+                            <td class="CalNextPrev">
+                                <a href="javascript:void(0);" onclick="loadBlogCalendar(&#39;2022/01/27&#39;); return false;">&lt;</a>
+                            </td>
+                            <td align="center">2022年2月</td>
+                            <td align="right" class="CalNextPrev">
+                                <a href="javascript:void(0);" onclick="loadBlogCalendar(&#39;2022/03/27&#39;); return false;">&gt;</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+    <tr>
+        <th class="CalDayHeader" align="center" abbr="日" scope="col">日</th>
+        <th class="CalDayHeader" align="center" abbr="一" scope="col">一</th>
+        <th class="CalDayHeader" align="center" abbr="二" scope="col">二</th>
+        <th class="CalDayHeader" align="center" abbr="三" scope="col">三</th>
+        <th class="CalDayHeader" align="center" abbr="四" scope="col">四</th>
+        <th class="CalDayHeader" align="center" abbr="五" scope="col">五</th>
+        <th class="CalDayHeader" align="center" abbr="六" scope="col">六</th>
+    </tr>
+            <tr>
+                            <td class="CalOtherMonthDay" align="center">30</td>
+                            <td class="CalOtherMonthDay" align="center">31</td>
+                        <td class="" align="center">
+                            1
+                        </td>
+                        <td class="" align="center">
+                            2
+                        </td>
+                        <td class="" align="center">
+                            3
+                        </td>
+                        <td class="" align="center">
+                            4
+                        </td>
+                    <td class="CalWeekendDay" align="center">
+                        5
+                    </td>
+            </tr>
+                <tr>
+                        <td class="CalWeekendDay" align="center">
+                            6
+                        </td>
+                            <td class="" align="center">
+                                7
+                            </td>
+                            <td class="" align="center">
+                                8
+                            </td>
+                            <td class="" align="center">
+                                9
+                            </td>
+                            <td class="" align="center">
+                                10
+                            </td>
+                            <td class="" align="center">
+                                11
+                            </td>
+                        <td class="CalWeekendDay" align="center">
+                            12
+                        </td>
+                </tr>
+                <tr>
+                        <td class="CalWeekendDay" align="center">
+                            13
+                        </td>
+                            <td class="" align="center">
+                                14
+                            </td>
+                            <td class="" align="center">
+                                15
+                            </td>
+                            <td class="" align="center">
+                                16
+                            </td>
+                            <td class="" align="center">
+                                17
+                            </td>
+                            <td class="" align="center">
+                                18
+                            </td>
+                        <td class="CalWeekendDay" align="center">
+                            19
+                        </td>
+                </tr>
+                <tr>
+                        <td class="CalWeekendDay" align="center">
+                            20
+                        </td>
+                            <td class="" align="center">
+                                21
+                            </td>
+                            <td class="" align="center">
+                                22
+                            </td>
+                            <td class="" align="center">
+                                23
+                            </td>
+                            <td class="" align="center">
+                                24
+                            </td>
+                            <td class="" align="center">
+                                25
+                            </td>
+                        <td class="CalWeekendDay" align="center">
+                            26
+                        </td>
+                </tr>
+                <tr>
+                        <td class="CalTodayDay" align="center">
+                            27
+                        </td>
+                            <td class="" align="center">
+                                28
+                            </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                1
+                            </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                2
+                            </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                3
+                            </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                4
+                            </td>
+                        <td class="CalOtherMonthDay" align="center">
+                            5
+                        </td>
+                </tr>
+                <tr>
+                        <td class="CalOtherMonthDay" align="center">
+                            6
+                        </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                7
+                            </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                8
+                            </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                9
+                            </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                10
+                            </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                11
+                            </td>
+                        <td class="CalOtherMonthDay" align="center">
+                            12
+                        </td>
+                </tr>
+    </tbody>
+</table></div><script>loadBlogDefaultCalendar();</script>			
+			<div id="leftcontentcontainer">
+				<div id="blog-sidecolumn"><!-- 搜索 -->
+<div id="sidebar_search" class="sidebar-block">
+    <div id="sidebar_search" class="mySearch">
+        <h3 class="catListTitle">搜索</h3>
+        <div id="sidebar_search_box">
+            <div id="widget_my_zzk" class="div_my_zzk">
+                <input type="text" id="q" onkeydown="return zzk_go_enter(event);" class="input_my_zzk">&nbsp;<input onclick="zzk_go()" type="button" value="找找看" id="btnZzk" class="btn_my_zzk">
+            </div>
+            <div id="widget_my_google" class="div_my_zzk">
+                <input type="text" name="google_q" id="google_q" onkeydown="return google_go_enter(event);" class="input_my_zzk">&nbsp;<input onclick="google_go()" type="button" value="谷歌搜索" class="btn_my_zzk">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 常用链接 -->
+<div id="sidebar_shortcut" class="sidebar-block"><div class="catListLink">
+<h3 class="catListTitle">
+常用链接
+</h3>
+<ul>
+    
+<li><a href="https://www.cnblogs.com/zhibei/p/" title="我的博客的随笔列表">我的随笔</a></li>
+<li><a href="https://www.cnblogs.com/zhibei/MyComments.html" title="我的发表过的评论列表">我的评论</a></li>
+<li><a href="https://www.cnblogs.com/zhibei/OtherPosts.html" title="我评论过的随笔列表">我的参与</a></li>
+<li><a href="https://www.cnblogs.com/zhibei/RecentComments.html" title="我的博客的评论列表">最新评论</a></li>
+<li><a href="https://www.cnblogs.com/zhibei/tag/" title="我的博客的标签列表">我的标签</a></li>
+
+</ul>
+</div>
+
+</div>
+
+<!-- 最新随笔 -->
+
+
+<!-- 我的标签 -->
+<div id="sidebar_toptags" class="sidebar-block"><div class="catListTag">
+<h3 class="catListTitle">我的标签</h3>
+<ul>
+        <li>
+            <a href="https://www.cnblogs.com/zhibei/tag/CPLUSPLUS%26OpenCV/">CPLUSPLUS&amp;OpenCV<span class="tag-count">(1)</span></a>
+        </li>
+    
+
+</ul>
+</div>
+
+</div>
+
+<!-- 积分与排名 -->
+
+
+<!-- 随笔分类、随笔档案、文章分类、新闻分类、相册、链接 -->
+<div id="sidebar_categories">
+
+    <div id="sidebar_postcategory" class="catListPostCategory sidebar-block">
+        <h3 class="catListTitle">
+            
+随笔分类
+
+
+
+        </h3>
+
+        <ul>
+
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/zhibei/category/1605970.html" class="category-item-link" rel="" target="">ARM板(10)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/zhibei/category/1605969.html" class="category-item-link" rel="" target="">CPP&amp;OpenCV(29)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/zhibei/category/1240479.html" class="category-item-link" rel="" target="">leetcode学习总结(11)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/zhibei/category/1220860.html" class="category-item-link" rel="" target="">linux系统学习(27)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/zhibei/category/1299298.html" class="category-item-link" rel="" target="">python学习(14)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/zhibei/category/1240635.html" class="category-item-link" rel="" target="">大话数据结构知识总结(14)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/zhibei/category/1238498.html" class="category-item-link" rel="" target="">光学字符识别OCR(9)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/zhibei/category/1220853.html" class="category-item-link" rel="" target="">机器学习(40)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/zhibei/category/1238494.html" class="category-item-link" rel="" target="">剑指offer(20)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/zhibei/category/1255197.html" class="category-item-link" rel="" target="">面试总结(4)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/zhibei/category/1220857.html" class="category-item-link" rel="" target="">深度学习(54)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/zhibei/category/1253718.html" class="category-item-link" rel="" target="">数据库mysql(7)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/zhibei/category/1220851.html" class="category-item-link" rel="" target="">数据挖掘(11)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/zhibei/category/1581431.html" class="category-item-link" rel="" target="">数字图像处理基础(5)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/zhibei/category/1498301.html" class="category-item-link" rel="" target="">现代图像处理(6)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="false" style="display: none">
+                    
+<a href="https://www.cnblogs.com/zhibei/category/1262277.html" class="category-item-link" rel="" target="">信号处理(6)</a>
+ 
+                </li>                
+            <li>
+                <a href="javascript:void(0)" onclick="sideColumnManager.loadMore(this)">更多</a>
+            </li>
+        </ul>
+
+
+    </div>    
+    <div id="sidebar_postarchive" class="catListPostArchive sidebar-block">
+        <h3 class="catListTitle">
+            
+随笔档案
+
+
+
+        </h3>
+
+        <ul>
+
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/zhibei/archive/2020/07.html" class="category-item-link" rel="" target="">2020年7月(9)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/zhibei/archive/2020/06.html" class="category-item-link" rel="" target="">2020年6月(8)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/zhibei/archive/2020/05.html" class="category-item-link" rel="" target="">2020年5月(7)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/zhibei/archive/2020/04.html" class="category-item-link" rel="" target="">2020年4月(8)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/zhibei/archive/2020/03.html" class="category-item-link" rel="" target="">2020年3月(8)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/zhibei/archive/2020/02.html" class="category-item-link" rel="" target="">2020年2月(17)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/zhibei/archive/2020/01.html" class="category-item-link" rel="" target="">2020年1月(6)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/zhibei/archive/2019/12.html" class="category-item-link" rel="" target="">2019年12月(18)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/zhibei/archive/2019/11.html" class="category-item-link" rel="" target="">2019年11月(9)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/zhibei/archive/2019/07.html" class="category-item-link" rel="" target="">2019年7月(5)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/zhibei/archive/2018/11.html" class="category-item-link" rel="" target="">2018年11月(6)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/zhibei/archive/2018/10.html" class="category-item-link" rel="" target="">2018年10月(11)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/zhibei/archive/2018/09.html" class="category-item-link" rel="" target="">2018年9月(10)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/zhibei/archive/2018/08.html" class="category-item-link" rel="" target="">2018年8月(12)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="true" style="display: block">
+                    
+<a href="https://www.cnblogs.com/zhibei/archive/2018/07.html" class="category-item-link" rel="" target="">2018年7月(72)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="false" style="display: none">
+                    
+<a href="https://www.cnblogs.com/zhibei/archive/2018/06.html" class="category-item-link" rel="" target="">2018年6月(36)</a>
+ 
+                </li>                
+                <li data-category-list-item-visible="false" style="display: none">
+                    
+<a href="https://www.cnblogs.com/zhibei/archive/2018/05.html" class="category-item-link" rel="" target="">2018年5月(7)</a>
+ 
+                </li>                
+            <li>
+                <a href="javascript:void(0)" onclick="sideColumnManager.loadMore(this)">更多</a>
+            </li>
+        </ul>
+
+
+    </div>    
+</div>
+
+<!-- 最新评论 -->
+<!-- 阅读排行榜 -->
+<div id="sidebar_topviewedposts" class="sidebar-block"><div class="catListView">
+<h3 class="catListTitle">阅读排行榜</h3>
+	<div id="TopViewPostsBlock">
+        <ul style="word-break:break-all">
+                    <li>
+                        <a href="https://www.cnblogs.com/zhibei/p/9755938.html">
+                            1. python中全局变量的修改(19059)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.cnblogs.com/zhibei/p/9391014.html">
+                            2. 维特比算法（Viterbi）及python实现样例(18658)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.cnblogs.com/zhibei/p/9584466.html">
+                            3. python上数据存储 .h5格式或者h5py(13974)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.cnblogs.com/zhibei/p/9368575.html">
+                            4. 连续小波变换（CWT）(13408)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.cnblogs.com/zhibei/p/9635825.html">
+                            5. TypeError: cannot perform reduce with flexible type(13367)
+                        </a>
+                    </li>
+        </ul>
+    </div>
+</div>
+
+</div>
+
+<!-- 评论排行榜 -->
+<div id="sidebar_topcommentedposts" class="sidebar-block"><div class="catListFeedback">
+<h3 class="catListTitle">评论排行榜</h3>
+	<div id="TopFeedbackPostsBlock">
+        <ul style="word-break:break-all">
+                    <li>
+                        <a href="https://www.cnblogs.com/zhibei/p/9373120.html">
+                            1. 非负矩阵分解（NMF）原理及算法实现(5)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.cnblogs.com/zhibei/p/9391014.html">
+                            2. 维特比算法（Viterbi）及python实现样例(4)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.cnblogs.com/zhibei/p/9375834.html">
+                            3. 时频方向上重排(3)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.cnblogs.com/zhibei/p/9757352.html">
+                            4. 如何理解卷积(2)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.cnblogs.com/zhibei/p/12975055.html">
+                            5. yolov3_to_onnx, onnx.onnx_cpp2py_export.check.ValidationError:Op registered for Upsample is depracted in domain_version of 10(1)
+                        </a>
+                    </li>
+        </ul>
+    </div>
+</div>
+
+</div>
+
+<!-- 推荐排行榜 -->
+<div id="sidebar_topdiggedposts" class="sidebar-block">
+<div id="topdigg_posts_wrap">
+    <div class="catListView">
+        <h3 class="catListTitle">推荐排行榜</h3>
+        <div id="TopDiggPostsBlock">
+            <ul style="word-break: break-all">
+                        <li>
+                            <a href="https://www.cnblogs.com/zhibei/p/9371678.html">
+                                1. S变换(3)
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.cnblogs.com/zhibei/p/12400948.html">
+                                2. C++ opencv 计时工具cv::getTickCount()和cvGetTickCount的区别及用法(2)
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.cnblogs.com/zhibei/p/12095431.html">
+                                3. ubuntu:beyond compare 4 This license key has been revoked 解决办法(2)
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.cnblogs.com/zhibei/p/9635825.html">
+                                4. TypeError: cannot perform reduce with flexible type(2)
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.cnblogs.com/zhibei/p/9375834.html">
+                                5. 时频方向上重排(2)
+                            </a>
+                        </li>
+            </ul>
+        </div>
+    </div>
+</div></div><div id="sidebar_recentcomments" class="sidebar-block"><div class="catListComment">
+<h3 class="catListTitle">最新评论</h3>
+
+	<div class="RecentCommentBlock">
+        <ul>
+                    <li class="recent_comment_title"><a href="https://www.cnblogs.com/zhibei/p/9391014.html">1. Re:维特比算法（Viterbi）及python实现样例</a></li>
+                    <li class="recent_comment_body"><p>还有一个状态的前导状态不一定是上一列的最大概率，不能直接从F中获得，还需要一个和F同样大小的矩阵来记录每个观测态中每个隐藏态的前导状态。</p>
+</li>
+                    <li class="recent_comment_author">--yaojin17</li>
+                    <li class="recent_comment_title"><a href="https://www.cnblogs.com/zhibei/p/9391014.html">2. Re:维特比算法（Viterbi）及python实现样例</a></li>
+                    <li class="recent_comment_body">21 for i in list_x: 22 list_p.append(i*10000) 23 list_max.append(max(list_p)/10000) 这里为什么要乘10000再除10...</li>
+                    <li class="recent_comment_author">--yaojin17</li>
+                    <li class="recent_comment_title"><a href="https://www.cnblogs.com/zhibei/p/12975055.html">3. Re:yolov3_to_onnx, onnx.onnx_cpp2py_export.check.ValidationError:Op registered for Upsample is depracted in domain_version of 10</a></li>
+                    <li class="recent_comment_body"><p>牛逼</p>
+</li>
+                    <li class="recent_comment_author">--魏大侠</li>
+                    <li class="recent_comment_title"><a href="https://www.cnblogs.com/zhibei/p/12088061.html">4. Re:darknet-yolov3模型预测框size不正确的原因</a></li>
+                    <li class="recent_comment_body"><p>cfg一样，还有其他的原因吗</p>
+</li>
+                    <li class="recent_comment_author">--hello_JK</li>
+                    <li class="recent_comment_title"><a href="https://www.cnblogs.com/zhibei/p/9782909.html">5. Re:神经网络中的激活函数具体是什么？为什么Relu要好过与tanh和sigmoid function</a></li>
+                    <li class="recent_comment_body"><p>为什么不能是非0均值的？？？是不是为了避免ICS</p>
+</li>
+                    <li class="recent_comment_author">--秋风的蝉鸣</li>
+        </ul>
+    </div>
+</div>
+
+</div>
+
+
+</div>
+                    <script>loadBlogSideColumn();</script>
+			</div>			
+		</div><!--end: sideBarMain -->
+	</div><!--end: sideBar 侧边栏容器 -->
+	<div class="clear"></div>
+	</div><!--end: main -->
+	<div class="clear"></div>
+	<div id="footer">
+		<!--done-->
+Copyright © 2022 我们都是大好青年
+<br><span id="poweredby">Powered by .NET 6 on Kubernetes</span>
+
+
+
+	</div><!--end: footer -->
+</div><!--end: home 自定义的最大容器 -->
+
+
+    
+
+    <input type="hidden" id="antiforgery_token" value="CfDJ8GsLOKiGtk1Au0UP1SouGdWFtubf12_uphk5KZBl0QArh6GMrrvYKawT4zFGeTMOiPI1EPurpATzjjsPnOZHGLwTnwkay-BEYsW4KunOGTxdPMNFA9oYLqzzkVfqVhni501xlgrSnVnJD4_7fvr2qmA">
+    <script async="" src="维特比算法（Viterbi）及python实现样例%20-%20我们都是大好青年%20-%20博客园_files/js"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    var kv = getGACustom();
+    if (kv) {
+        gtag('set', kv);
+    }
+    gtag('config', 'UA-476124-1');
+    </script>
+    <script defer="" src="维特比算法（Viterbi）及python实现样例%20-%20我们都是大好青年%20-%20博客园_files/hm.js.下载"></script><iframe src="维特比算法（Viterbi）及python实现样例%20-%20我们都是大好青年%20-%20博客园_files/container.html" style="visibility: hidden; display: none;"></iframe>
+
+<iframe src="维特比算法（Viterbi）及python实现样例%20-%20我们都是大好青年%20-%20博客园_files/aframe.html" width="0" height="0" style="display: none;"></iframe></body></html>
