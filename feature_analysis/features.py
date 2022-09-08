@@ -30,17 +30,17 @@ for x in f_names:
     label = preprocessing.LabelEncoder()
     data[x] = label.fit_transform(data[x])
 
-# pfr = pandas_profiling.ProfileReport(data)
-# pfr.to_file("./profile_report.html")
+pfr = pandas_profiling.ProfileReport(data)
+pfr.to_file("./profile_report.html")
 
-# (data.corr().loc[:, :13].plot(kind='barh', figsize=(4, 10)))
-# pd.plotting.scatter_matrix(data,
-#                            figsize=(14, 14),
-#                            c='k',
-#                            marker='o',
-#                            diagonal='hist',
-#                            alpha=0.8,
-#                            range_padding=0.1)
+(data.corr().loc[:, :13].plot(kind='barh', figsize=(4, 10)))
+pd.plotting.scatter_matrix(data,
+                           figsize=(14, 14),
+                           c='k',
+                           marker='o',
+                           diagonal='hist',
+                           alpha=0.8,
+                           range_padding=0.1)
 
 corr_data = data.corr()
 f, ax = plt.subplots(figsize=(14, 9))
