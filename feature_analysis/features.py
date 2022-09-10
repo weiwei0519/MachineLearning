@@ -30,30 +30,32 @@ for x in f_names:
     label = preprocessing.LabelEncoder()
     data[x] = label.fit_transform(data[x])
 
-pfr = pandas_profiling.ProfileReport(data)
-pfr.to_file("./profile_report.html")
+# pfr = pandas_profiling.ProfileReport(data)
+# pfr.to_file("./profile_report.html")
 
-(data.corr().loc[:, :13].plot(kind='barh', figsize=(4, 10)))
-pd.plotting.scatter_matrix(data,
-                           figsize=(14, 14),
-                           c='k',
-                           marker='o',
-                           diagonal='hist',
-                           alpha=0.8,
-                           range_padding=0.1)
-
+# 相关性分析
 corr_data = data.corr()
-f, ax = plt.subplots(figsize=(14, 9))
-sns.heatmap(corr_data, vmax=0.8, square=True)
-cols = corr_data.nlargest(14, 'income')['income'].index
-cm = np.corrcoef(data[cols].values.T)
-sns.set(font_scale=1.25)
-hm = sns.heatmap(cm,
-                 cbar=True,
-                 annot=True,
-                 square=True,
-                 fmt='.2f',
-                 annot_kws={'size': 10},
-                 yticklabels=cols.values,
-                 xticklabels=cols.values)
-plt.show()
+(corr_data.loc['income'].plot(kind='barh', figsize=(12, 10)))
+# pd.plotting.scatter_matrix(data,
+#                            figsize=(14, 14),
+#                            c='k',
+#                            marker='o',
+#                            diagonal='hist',
+#                            alpha=0.8,
+#                            range_padding=0.1)
+#
+#
+# f, ax = plt.subplots(figsize=(14, 9))
+# sns.heatmap(corr_data, vmax=0.8, square=True)
+# cols = corr_data.nlargest(14, 'income')['income'].index
+# cm = np.corrcoef(data[cols].values.T)
+# sns.set(font_scale=1.25)
+# hm = sns.heatmap(cm,
+#                  cbar=True,
+#                  annot=True,
+#                  square=True,
+#                  fmt='.2f',
+#                  annot_kws={'size': 10},
+#                  yticklabels=cols.values,
+#                  xticklabels=cols.values)
+# plt.show()
