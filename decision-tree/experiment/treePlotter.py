@@ -77,7 +77,7 @@ def plotTree(myTree, parentPt, nodeTxt):  # if the first key tells you what feat
 # if you do get a dictonary you know it's a tree, and the first element will be another dict
 
 def createPlot(myTree):
-    fig = plt.figure(1, facecolor='white')
+    fig = plt.figure(1, figsize=(10, 10), facecolor='white')
     fig.clf()
     axprops = dict(xticks=[], yticks=[])
     createPlot.ax1 = plt.subplot(111, frameon=False, **axprops)  # no ticks

@@ -22,7 +22,7 @@ class DataSet:
 
     def __init__(self, file_name, data_transmit):
         print("Datasets initial")
-        datasets = pd.read_csv(file_name, sep="\s*,\s*")  # sep="\s*,\s*"去掉空格
+        datasets = pd.read_csv(file_name, sep="\s*,\s*", engine='python')  # sep="\s*,\s*"去掉空格
         datasets = datasets.replace(data_transmit)
         self.X = np.array(datasets.drop(columns='income'))
         self.Y = np.array(datasets['income'])

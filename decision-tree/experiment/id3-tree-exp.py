@@ -65,6 +65,7 @@ def chooseBestFeatureToSplit(D):
     best_ai = ""                    # 最优的特征label
     max_Gain_D = -1.0               # 最优信息增益，信息增益最小值为0
     for i in range(numFeatures):
+        print("i: " + str(i))
         a_List = [column[i] for column in D]  # 获取数据集中当前特征下的所有值
         a_values = set(a_List)  # 获取当前特征值
         Gain_D_a = calcGain(D, a_values, labels[i])

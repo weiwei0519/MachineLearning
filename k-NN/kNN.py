@@ -55,7 +55,6 @@ class KNN:
         Y_predict = []
         for i in range(X_testsets.shape[0]):
             Y_predict.append(self.predict(X_testsets[i, :], k))
-            print(i)
         return Y_predict
 
 if __name__ == '__main__':

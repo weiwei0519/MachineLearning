@@ -162,6 +162,8 @@ def showDataSet(dataMat, labelMat, weakClassifiterArr):
 
     # 绘制训练函数图像
     for i in range(len(weakClassifiterArr)):  # 每个弱分类器一条线(一个阈值)
+        if weakClassifiterArr[i]['thresh'] > 20:
+            continue
         if weakClassifiterArr[i]['dim'] == 0:  # 如果分类特征是第0个特征(x1)
             x2 = np.arange(1.0, 3.0,
                            1)  # x1是一个2维列表[1,2]    arange()函数用法：https://blog.csdn.net/island1995/article/details/90179076
@@ -172,7 +174,7 @@ def showDataSet(dataMat, labelMat, weakClassifiterArr):
 
     plt.title('Training sample data')  # 绘制title
     # 绘制坐标轴
-    plt.xlabel('x1');  # 第0个特征
+    plt.xlabel('x1')  # 第0个特征
     plt.ylabel('x2')  # 第1个特征
     plt.show()
 

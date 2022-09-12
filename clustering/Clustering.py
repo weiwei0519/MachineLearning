@@ -17,7 +17,7 @@ class Clustering:
 
     def __init__(self, file_name, data_transmit, k=2, p=2):
         print("Clustering initial")
-        datasets = pd.read_csv(file_name, sep="\s*,\s*")  # sep="\s*,\s*"去掉空格
+        datasets = pd.read_csv(file_name, sep="\s*,\s*", engine='python')  # sep="\s*,\s*"去掉空格
         datasets = datasets.replace(data_transmit)
         self.D = np.array(datasets.drop(columns='income'))
         self.Y = np.array(datasets['income'])

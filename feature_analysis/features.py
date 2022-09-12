@@ -23,19 +23,19 @@ project_path = PathUtil()
 data_path = project_path.rootPath + '/datasets/data/income_trainsets.csv'
 data = pd.read_csv(data_path)
 data.info()
-data = data.sample(1000)
+# data = data.sample(1000)
 # 对非数值型变量进行预处理
 f_names = ['workclass', 'education', 'marital', 'occupation', 'relationship', 'race', 'sex', 'native-country', 'income']
 for x in f_names:
     label = preprocessing.LabelEncoder()
     data[x] = label.fit_transform(data[x])
 
-# pfr = pandas_profiling.ProfileReport(data)
-# pfr.to_file("./profile_report.html")
+pfr = pandas_profiling.ProfileReport(data)
+pfr.to_file("./profile_report_2.html")
 
 # 相关性分析
-corr_data = data.corr()
-(corr_data.loc['income'].plot(kind='barh', figsize=(12, 10)))
+# corr_data = data.corr()
+# (corr_data.loc['income'].plot(kind='barh', figsize=(12, 10)))
 # pd.plotting.scatter_matrix(data,
 #                            figsize=(14, 14),
 #                            c='k',
